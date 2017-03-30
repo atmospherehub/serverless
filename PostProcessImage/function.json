@@ -1,0 +1,21 @@
+{
+  "bindings": [
+    {
+      "name": "message",
+      "type": "serviceBusTrigger",
+      "direction": "in",
+      "queueName": "atmosphere-processed-images",
+      "connection": "dm-common-servicebus",
+      "accessRights": "Listen"
+    },
+    {
+      "type": "serviceBus",
+      "name": "notifyMessage",
+      "topicName": "atmosphere-images-with-faces",
+      "connection": "dm-common-servicebus",
+      "accessRights_": "Send",
+      "direction": "out"
+    }
+  ],
+  "disabled": false
+}

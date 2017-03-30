@@ -1,0 +1,14 @@
+{
+  "bindings": [
+    {
+      "name": "message",
+      "type": "serviceBusTrigger",
+      "direction": "in",
+      "topicName": "atmosphere-reports",
+      "subscriptionName": "mail-send",
+      "connection": "dm-common-servicebus",
+      "accessRights": "Listen"
+    }
+  ],
+  "disabled": false
+}

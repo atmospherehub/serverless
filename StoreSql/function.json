@@ -1,0 +1,22 @@
+{
+  "bindings": [
+    {
+      "name": "message",
+      "type": "serviceBusTrigger",
+      "direction": "in",
+      "topicName": "atmosphere-images-with-faces",
+      "subscriptionName": "store-sql",
+      "connection": "dm-common-servicebus",
+      "accessRights": "Listen"
+    },
+    {
+      "type": "serviceBus",
+      "name": "outputQueue",
+      "queueName": "atmosphere-post-sql",
+      "connection": "dm-common-servicebus",
+      "accessRights_": "Send",
+      "direction": "out"
+    }
+  ],
+  "disabled": false
+}

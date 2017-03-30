@@ -1,0 +1,28 @@
+{
+    "proxies": {
+        "api-timeseries": {
+            "matchCondition": {
+                "route": "timeseries"
+            },
+            "backendUri": "https://%WEBSITE_HOSTNAME%/api/ApiTimeSeries"
+        },
+        "api-highlights": {
+            "matchCondition": {
+                "route": "highlights"
+            },
+            "backendUri": "https://%WEBSITE_HOSTNAME%/api/ApiEmotionsHighlights"
+        },
+        "api-latest-significant": {
+            "matchCondition": {
+                "route": "latest-significants"
+            },
+            "backendUri": "https://%WEBSITE_HOSTNAME%/api/ApiLatestSignificants"
+        },
+        "acme": {
+            "matchCondition": {
+                "route": ".well-known/acme-challenge/{token}"
+            },
+            "backendUri": "https://%WEBSITE_SITE_NAME%.azurewebsites.net/api/StaticFileServer?file=.well-known/acme-challenge/{token}"
+        }
+    }
+}

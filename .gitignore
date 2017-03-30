@@ -1,0 +1,9 @@
+# DNX
+project.lock.json
+artifacts/
+
+# acme
+.well-known/
+
+#.NET
+App_Data/

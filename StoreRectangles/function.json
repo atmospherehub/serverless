@@ -1,0 +1,13 @@
+{
+  "bindings": [
+    {
+      "name": "message",
+      "type": "serviceBusTrigger",
+      "direction": "in",
+      "queueName": "atmosphere-post-sql",
+      "connection": "dm-common-servicebus",
+      "accessRights": "Listen"
+    }
+  ],
+  "disabled": false
+}

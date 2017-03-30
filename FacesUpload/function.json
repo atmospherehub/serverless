@@ -1,0 +1,23 @@
+{
+  "bindings": [
+    {
+      "authLevel": "function",
+      "name": "request",
+      "type": "httpTrigger",
+      "direction": "in"
+    },
+    {
+      "name": "$return",
+      "type": "http",
+      "direction": "out"
+    },
+    {
+      "type": "blob",
+      "name": "outputBlob",
+      "path": "faces/{rand-guid}.jpg",
+      "connection": "funcatmosphere_STORAGE",
+      "direction": "out"
+    }
+  ],
+  "disabled": false
+}
