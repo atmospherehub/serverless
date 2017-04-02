@@ -1,14 +1,10 @@
 {
-  "bindings": [
-    {
-      "name": "message",
-      "type": "serviceBusTrigger",
-      "direction": "in",
-      "topicName": "atmosphere-images-with-faces",
-      "subscriptionName": "notify-slack",
-      "connection": "dm-common-servicebus",
-      "accessRights": "Listen"
+    "frameworks": {
+        "net46": {
+            "dependencies": {
+                "Microsoft.ProjectOxford.Common": "1.0.324",
+                "Newtonsoft.Json": "8.0.2"
+            }
+        }
     }
-  ],
-  "disabled": false
 }
