@@ -91,7 +91,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
                     WHEN 'Weekday' then DATEPART(WEEKDAY, [Time] AT TIME ZONE 'Israel Standard Time') 
                     WHEN 'Hour' then DATEPART(HOUR, [Time] AT TIME ZONE 'Israel Standard Time') 
                 END
-                ORDER BY [GroupValue]",
+                ORDER BY [FormattedDate]",
             new {
                 start = from.UtcDateTime,
                 end = to.UtcDateTime,
