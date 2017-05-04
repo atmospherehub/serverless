@@ -22,7 +22,7 @@ private const bool SHOULD_DRAW_GREEN_RECT = false;
 
 public static void Run(string message, TraceWriter log)
 {
-    log.Info($"Triggered StoreRectangles by: {message}");
+    log.Info($"Triggered StoreZoomIn by: {message}");
     var face = JsonConvert.DeserializeObject<Face>(message);
 
     using (var inputStream = downloadBlob(face.ImageName))
