@@ -27,7 +27,7 @@ public static void Run(string message, TraceWriter log)
     {
         log.Info($"Loaded image from blob in size of {inputStream.Length}");
 
-        using(var outputStream = drawRectangle(face.FaceRectangle, inputStream, log))
+        using(var outputStream = drawRectangle(face.FaceRectangle, inputStream))
         {
             var fileName = $"{face.Id.ToString("D")}.jpg";
             uploadBlob(fileName, outputStream);
