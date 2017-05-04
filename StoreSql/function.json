@@ -11,8 +11,8 @@
     },
     {
       "type": "serviceBus",
-      "name": "outputQueue",
-      "queueName": "atmosphere-post-sql",
+      "name": "outputTopic",
+      "topicName": "atmosphere-images-in-db",
       "connection": "dm-common-servicebus",
       "accessRights_": "Send",
       "direction": "out"

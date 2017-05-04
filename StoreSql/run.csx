@@ -15,7 +15,7 @@ private static readonly Lazy<byte> register = new Lazy<byte>(() =>
     return 0;
 }, false);
 
-public static async Task Run(string message, TraceWriter log, ICollector<string> outputQueue)
+public static async Task Run(string message, TraceWriter log, ICollector<string> outputTopic)
 {
     log.Info($"Triggered StoreSql by: {message}");
     var touch = register.Value;
@@ -74,7 +74,7 @@ public static async Task Run(string message, TraceWriter log, ICollector<string>
     log.Info($"Stored {dbRecords.Count} rows");
 
     foreach(var dbRecord in dbRecords)
-        outputQueue.Add(JsonConvert.SerializeObject(dbRecord));
+        outputTopic.Add(JsonConvert.SerializeObject(dbRecord));
 }
 
 public class Image
