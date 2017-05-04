@@ -23,44 +23,48 @@ public static void Run(string message, TraceWriter log)
     log.Info($"Triggered StoreRectangles by: {message}");
     var face = JsonConvert.DeserializeObject<Face>(message);
 
-    using (var inputStream = new MemoryStream())
+    using (var inputStream = downloadBlob(face.ImageName))
     {
-        downloadBlob(face.ImageName, inputStream);
-        inputStream.Seek(0, SeekOrigin.Begin);
         log.Info($"Loaded image from blob in size of {inputStream.Length}");
 
-        using (var image = Image.FromStream(inputStream))
+        using(var outputStream = drawRectangle(face.FaceRectangle, inputStream, log))
         {
-            using (var graphics = Graphics.FromImage(image))
-            {
-                var rectangle = new Rectangle(face.FaceRectangle.Left, face.FaceRectangle.Top, 
-                    face.FaceRectangle.Width, face.FaceRectangle.Height);
-                log.Info($"Drawing rectangle {rectangle}");
-                graphics.DrawRectangle(Pens.Lime, rectangle);
-            }
-
-            using (var encoders = new EncoderParameters())
-            {
-                encoders.Param[0] = new EncoderParameter(Encoder.Quality, 85L);
-                using (var outputStream = new MemoryStream())
-                {
-                    image.Save(outputStream, codecInfo, encoders);
-                    outputStream.Seek(0, SeekOrigin.Begin);
-
-                    var fileName = $"{face.Id.ToString("D")}.jpg";
-                    uploadBlob(fileName, outputStream);
-                    log.Info($"Uploaded image {fileName} blob in size of {outputStream.Length}");
-                }
-            }
+            var fileName = $"{face.Id.ToString("D")}.jpg";
+            uploadBlob(fileName, outputStream);
+            log.Info($"Uploaded image {fileName} blob in size of {outputStream.Length}");
         }
     }
 }
 
-private static void downloadBlob(string fileName, Stream stream)
+public static Stream drawRectangle(Face.Rectangle faceArea, Stream inputStream)
+{
+    using (var image = Image.FromStream(inputStream))
+    {
+        using (var graphics = Graphics.FromImage(image))
+        {
+            var rectangle = new Rectangle(faceArea.Left, faceArea.Top, faceArea.Width, faceArea.Height);
+            graphics.DrawRectangle(Pens.Lime, rectangle);
+        }
+
+        using (var encoders = new EncoderParameters())
+        {
+            encoders.Param[0] = new EncoderParameter(Encoder.Quality, 85L);
+            var outputStream = new MemoryStream();
+            image.Save(outputStream, codecInfo, encoders);
+            outputStream.Seek(0, SeekOrigin.Begin);
+            return outputStream;
+        }
+    }
+}
+
+private static Stream downloadBlob(string fileName)
 {
     var container = blobClient.GetContainerReference(CONTAINER_NAME_INPUT);
     var block = container.GetBlockBlobReference(fileName);
+    var stream = new MemoryStream();
     block.DownloadToStream(stream);
+    stream.Seek(0, SeekOrigin.Begin);
+    return stream;
 }
 
 private static void uploadBlob(string fileName, Stream stream)
