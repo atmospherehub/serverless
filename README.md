@@ -1,14 +1,14 @@
 # Gateway for Atmosphere stations and API
 ```
-                                                       ++queue: atmosphere+processed+images
-                                                       +
-                                                       ?
-                                                       +
+                                                       +-[queue] atmosphere+processed+images
+                                                       |
+                                                       |
+                                                       |
 +--------------------+        +--------------------+   |    +--------------------+
-|    FacesUpload     +-------->    ProcessImage    +---+---->  PostProcessImage  |
+|    FacesUpload     +-------->    ProcessImage    +---?---->  PostProcessImage  |
 +--------------------+        +--------------------+        +---------+----------+
                                                                       |
-                                                                      +------+?+---------+topic: atmosphere+images+with+faces
+                                                                      ?----[topic] atmosphere+images+with+faces
                                                                       |
                          +--------------+--------------+--------------+--------------+
                          |              |              |                             |
@@ -16,7 +16,7 @@
                          |              |    |     StoreTable     |        |     StoreSql       |
                          |              |    +--------------------+        +---------+----------+
                          |              |                                            |
-                         |              |                                            +---+?+--+topic:-atmosphere+images+in+db
+                         |              |                                            ?----[topic] atmosphere+images+in+db
                          |    +---------v----------+                                 |
                          |    |    NotifySlack     |                  +--------------+-------------+
                          |    +--------------------+                  |                            |
@@ -29,10 +29,10 @@
 
 
 +--------------------+        +--------------------+
-|   GenerateReport   +---+---->   SendEmailReport  |
-+--------------------+   +    +--------------------+
-                         ?
-                         +
-                         ++topic: atmosphere+reports
+|   GenerateReport   +---?---->   SendEmailReport  |
++--------------------+   |    +--------------------+
+                         |
+                         |
+                         +-[topic] atmosphere+reports
 
 ```
