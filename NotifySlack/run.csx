@@ -42,7 +42,7 @@ private static string getPayload(ProcessedImage processedImage)
     using (var jsonWriter = new JsonTextWriterRoundedDecimal(sw))
     {
         jsonWriter.Formatting = Formatting.Indented;
-        jsonSerializer.Serialize(jsonWriter, processedImage.Rectangles.Select(r => r.Scores));
+        jsonSerializer.Serialize(jsonWriter, processedImage.Rectangles.Select(r => r.Scores.ToRankedList().Where(s => s.Value >= 0.1)));
     }
     return sb.ToString();
 }
