@@ -41,8 +41,13 @@ private static string getPayload(ProcessedImage processedImage)
     var sw = new StringWriter(sb, CultureInfo.InvariantCulture);
     using (var jsonWriter = new JsonTextWriterRoundedDecimal(sw))
     {
-        jsonWriter.Formatting = Formatting.Indented;
-        jsonSerializer.Serialize(jsonWriter, processedImage.Rectangles.Select(r => r.Scores.ToRankedList().Where(s => s.Value >= 0.1)));
+        jsonWriter.Formatting = Formatting.None;
+        jsonSerializer.Serialize(jsonWriter, processedImage
+            .Rectangles
+            .Select(r => r.Scores
+                .ToRankedList()
+                .Where(s => s.Value >= 0.1)
+                .ToDictionary(kv => kv.Key, kv => kv.Value)));
     }
     return sb.ToString();
 }
@@ -51,7 +56,7 @@ private static SlackMessage getMessage(string payload, string imageUrl)
 {
     var message = new SlackMessage
     {
-        Text = "Faces detected"
+        Text = null
     };
     message.Attachments = new SlackMessage.Attachment[]{ new SlackMessage.Attachment
     {
