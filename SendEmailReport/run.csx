@@ -27,7 +27,7 @@ public static async Task Run(string message, TraceWriter log)
         .SelectMany(r => new Dictionary<string, string> {
             { $"%{r.Name}Score%", r.Score.ToString("0.00") },
             { $"%{r.Name}Time%", TimeZoneInfo.ConvertTime(r.Time, ilTimezone).DateTime.ToShortTimeString() },
-            { $"%{r.Name}Image%", $"{CM.AppSettings["images_endpoint"]}/rectangles/{r.Id.ToString("D")}.jpg" }
+            { $"%{r.Name}Image%", $"{CM.AppSettings["images_endpoint"]}/zoomin/{r.Id.ToString("D")}.jpg" }
         })
         .ToDictionary(kv => kv.Key, kv => kv.Value);
     substitutions.Add("%Date%", report.StartDate.ToString("MMMM dd"));
