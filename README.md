@@ -1,4 +1,11 @@
 # Gateway for Atmosphere stations and API
+
+
+## Notes
+
+- `funproj` files are excluded for now, currently the deployment script cannot handle them 
+
+## Pipeline
 ```
                                                        +-[queue] atmosphere+processed+images
                                                        |
