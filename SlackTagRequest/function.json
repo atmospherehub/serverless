@@ -5,7 +5,7 @@
       "type": "serviceBusTrigger",
       "direction": "in",
       "topicName": "atmosphere-images-in-db",
-      "subscriptionName": "store-zoomin",
+      "subscriptionName": "tag-slack-sender",
       "connection": "dm-common-servicebus",
       "accessRights": "Listen"
     }
