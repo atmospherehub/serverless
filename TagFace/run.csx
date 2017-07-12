@@ -54,9 +54,13 @@ private static SlackMessage createResponseMessage(SlackMessage original, string 
     var att = original.Attachments[2];
 
     // preserve a list of users who performed tagging
-    var usersWhoTagged = att.CallbackId.Split(',').Select(u => u.Trim()).ToList();
-    usersWhoTagged.Add(taggedBy);
-    att.CallbackId = String.Join(", ", usersWhoTagged.Distinct());
+    var usersWhoTagged = att.CallbackId
+        .Split(',')
+        .Select(u => u.Trim())
+        .Where(u => !String.IsNullOrEmpty(u))
+        .Union(new string[] { taggedBy })
+        .Distinct();
+    att.CallbackId = String.Join(", ", usersWhoTagged);
     att.Text = $"Person tagged by {att.CallbackId} as:";
 
     // show which persons were picked for tagging
