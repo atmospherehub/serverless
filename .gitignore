@@ -9,3 +9,4 @@ artifacts/
 App_Data/
 *.suo
 /.vs/config/applicationhost.config
+/.vs
