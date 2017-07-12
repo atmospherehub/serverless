@@ -21,7 +21,7 @@ public static async Task Run(string message, TraceWriter log)
     var processedImage = JsonConvert.DeserializeObject<ProcessedImage>(message);
     
     using (var client = new HttpClient())
-    using (var request = new HttpRequestMessage(HttpMethod.Post, CM.AppSettings["slack_incoming_url"]))
+    using (var request = new HttpRequestMessage(HttpMethod.Post, CM.AppSettings["slack_webhook_url"]))
     {
         var payload = JsonConvert.SerializeObject(getMessage(
             getPayload(processedImage), 
