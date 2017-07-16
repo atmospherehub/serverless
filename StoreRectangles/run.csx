@@ -40,19 +40,24 @@ public static Stream drawRectangle(Face.Rectangle faceArea, Stream inputStream)
 {
     using (var image = Image.FromStream(inputStream))
     {
-        using (var graphics = Graphics.FromImage(image))
+        using (var targetImage = new Bitmap(faceArea.Width, faceArea.Height))
         {
-            var rectangle = new Rectangle(faceArea.Left, faceArea.Top, faceArea.Width, faceArea.Height);
-            graphics.DrawRectangle(Pens.Lime, rectangle);
-        }
-
-        using (var encoders = new EncoderParameters())
-        {
-            encoders.Param[0] = new EncoderParameter(Encoder.Quality, 85L);
-            var outputStream = new MemoryStream();
-            image.Save(outputStream, codecInfo, encoders);
-            outputStream.Seek(0, SeekOrigin.Begin);
-            return outputStream;
+            using (var graphics = Graphics.FromImage(targetImage))
+            {
+                graphics.DrawImage(
+                    image, 0, 0,
+                    new Rectangle(faceArea.Left, faceArea.Top, faceArea.Width, faceArea.Height), 
+                    GraphicsUnit.Pixel
+                    );
+            }
+            using (var encoders = new EncoderParameters())
+            {
+                encoders.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 85L);
+                var outputStream = new MemoryStream();
+                targetImage.Save(outputStream, codecInfo, encoders);
+                outputStream.Seek(0, SeekOrigin.Begin);
+                return outputStream;
+            }
         }
     }
 }
