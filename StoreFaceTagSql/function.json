@@ -1,0 +1,14 @@
+{
+    "bindings": [
+        {
+            "name": "mySbMsg",
+            "type": "serviceBusTrigger",
+            "direction": "in",
+            "topicName": "atmosphere-face-tagging",
+            "subscriptionName": "sql-store",
+            "connection": "dm-common-servicebus",
+            "accessRights": "Listen"
+        }
+    ],
+    "disabled": false
+}
