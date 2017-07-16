@@ -1,0 +1,14 @@
+{
+    "bindings": [
+        {
+            "name": "faceForRecognition",
+            "type": "serviceBusTrigger",
+            "direction": "in",
+            "topicName": "atmosphere-face-recognition",
+            "subscriptionName": "face-recognition",
+            "connection": "dm-common-servicebus",
+            "accessRights": "Listen"
+        }
+    ],
+    "disabled": false
+}

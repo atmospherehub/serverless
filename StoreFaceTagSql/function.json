@@ -8,6 +8,14 @@
             "subscriptionName": "sql-store",
             "connection": "dm-common-servicebus",
             "accessRights": "Listen"
+        },
+        {
+            "type": "serviceBus",
+            "name": "outputFaceTag",
+            "topicName": "atmosphere-face-recognition",
+            "connection": "dm-common-servicebus",
+            "accessRights": "Manage",
+            "direction": "out"
         }
     ],
     "disabled": false

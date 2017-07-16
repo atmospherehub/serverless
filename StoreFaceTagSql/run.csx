@@ -7,13 +7,14 @@ using CM = System.Configuration.ConfigurationManager;
 using Dapper;
 
 public static readonly string connectionString = CM.ConnectionStrings["Atmosphere"].ConnectionString;
-public static async Task Run(string mySbMsg, TraceWriter log)
+public static async Task Run(string mySbMsg, TraceWriter log, ICollector<string> outputFaceTag)
 {
+    log.Info($"Triggered StoreFaceTagSql by: {mySbMsg}");
     var now = DateTime.UtcNow;
-    var SlackInput = JsonConvert.DeserializeObject<SlackNotification>(mySbMsg);
-    SlackInput.Time = now;
-    log.Info($"Triggered StoreFaceTagSql by: {SlackInput.FaceId}");
-        using (var connection = new SqlConnection(connectionString))
+    var slackInput = JsonConvert.DeserializeObject<SlackNotification>(mySbMsg);
+    slackInput.Time = now;
+
+    using (var connection = new SqlConnection(connectionString))
     {
         await connection.OpenAsync();
         await connection.ExecuteAsync(
@@ -31,8 +32,9 @@ public static async Task Run(string mySbMsg, TraceWriter log)
                     @TaggedById,
                     @TaggedByName,
                     @Time)",
-            SlackInput);
+            slackInput);
     }   
+    outputFaceTag.Add(JsonConvert.SerializeObject(slackInput));
 }
 
 public class SlackNotification
@@ -41,5 +43,5 @@ public class SlackNotification
     public string FaceUserId { get; set; }
     public string TaggedById { get; set; }
     public string TaggedByName { get; set; }
-    public DateTime Time { get; set; }
+    public DateTimeOffset Time { get; set; }
 }
