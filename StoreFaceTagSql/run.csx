@@ -18,7 +18,7 @@ public static async Task Run(string mySbMsg, TraceWriter log)
         await connection.OpenAsync();
         await connection.ExecuteAsync(
             @"
-            UPDATE [dbo].[FaceTags] set FaceUserId=@FaceUserId where FaceId=@FaceId and TaggedById=@TaggedById
+            UPDATE [dbo].[FaceTags] set FaceUserId=@FaceUserId, Time=@Time where FaceId=@FaceId and TaggedById=@TaggedById
             IF @@ROWCOUNT=0
                 INSERT INTO [dbo].[FaceTags] (
                     [FaceId],
