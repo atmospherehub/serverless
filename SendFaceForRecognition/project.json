@@ -1,0 +1,12 @@
+{
+    "frameworks": {
+        "net46": {
+            "dependencies": {
+                "Microsoft.ProjectOxford.Common": "1.0.324",
+                "Newtonsoft.Json": "8.0.2",
+                "System.Data.SqlClient": "4.1.0",
+                "Dapper": "1.50.2"
+            }
+        }
+    }
+}
