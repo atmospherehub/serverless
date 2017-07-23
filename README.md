@@ -50,6 +50,15 @@
                          |
                          |
                          ++[topic] atmosphere+face+tagging
-
+                         
+                                                       ++[topic] atmosphere-face-recognition
+                                                       |
+                                                       |
++--------------------+        +--------------------+   +    +------------------------+
+|       FaceTag      +--+?+--->   StoreFaceTagSql  +--+?+---> SendFaceForRecognition |
++--------------------+   +    +--------------------+        +------------------------+
+                         |
+                         |
+                         ++[topic] atmosphere+face+tagging
 
 ```
