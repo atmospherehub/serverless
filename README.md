@@ -33,31 +33,32 @@
                |     NotifyMQTT     |
                +--------------------+
 
-                                                              +-------------------+
-                                                              |      FaceTag      |
-+--------------------+        +--------------------+          +---------+---------+
-|   GenerateReport   +--+?+--->   SendEmailReport  |                    |
-+--------------------+   +    +--------------------+                    ?+----+[topic] atmosphere+face+tagging
-                         |                                              |
-                         |                                    +---------+---------+
-                         ++[topic] atmosphere+reports         |  [subs] sql|store |
-                                                              +---------+---------+
-                                                                        |
-                                                              +---------v---------+
-                                                              |  StoreFaceTagSql  |
-                                                              +---------+---------+
-                                                                        |
-                                                                        ?+----+[topic] atmosphere-face-recognition
-                                                                        |
-                                                           +------------v------------+
-                                                           | [subs] face recognition |
-                                                           +------------+------------+
-                                                                        |
-                                                                        |
-                                                           +------------v------------+
-                                                           |  SendFaceForRecognition |
-                                                           +-------------------------+
 
 
++--------------------+        +--------------------+
+|   GenerateReport   +--+?+--->   SendEmailReport  |
++--------------------+   +    +--------------------+
+                         |
+                         |
+                         ++[topic] atmosphere+reports
+
+
+
++--------------------+        +-------------------+
+|       FaceTag      +--+?+--->  StoreFaceTagSql  |
++--------------------+   +    +-------------------+
+                         |
+                         |
+                         ++[topic] atmosphere+face+tagging
+                         
+                                                       ++[topic] atmosphere-face-recognition
+                                                       |
+                                                       |
++--------------------+        +--------------------+   +    +------------------------+
+|       FaceTag      +--+?+--->   StoreFaceTagSql  +--+?+---> SendFaceForRecognition |
++--------------------+   +    +--------------------+        +------------------------+
+                         |
+                         |
+                         ++[topic] atmosphere+face+tagging
 
 ```
