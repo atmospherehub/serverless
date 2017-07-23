@@ -16,7 +16,7 @@ This flows triggered by image that uploaded from atmosphere client device and ta
                                                        +--------------+--------------+
                                                        |                             |
                                              +---------v----------+        +---------v----------+
-                                             |     StoreTable     |        |     StoreSql       |
+                                             |      StoreSql      |        |     StoreTable     |
                                              +---------+----------+        +--------------------+
                                                        +                             
                                                        ?+--+[topic] atmosphere+images+in+db
