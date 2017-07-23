@@ -21,9 +21,9 @@ This flows triggered by image that uploaded from atmosphere client device and ta
                                                        +                             
                                                        ?+--+[topic] atmosphere+images+in+db
                                                        +
-                              +-------------------------------------------------+
-                              |                        |                        |
-                    +---------v----------+   +---------v----------+   +---------v----------+
-                    |  CreateRectangles  |   | SendFaceForTagging |   |    CreateZoomIn    |
-                    +--------------------+   +--------------------+   +--------------------+
+                                        +--------------+--------------+
+                                        |                             |
+                              +---------v----------+        +---------v----------+
+                              |  CreateRectangles  |        |    CreateZoomIn    |
+                              +--------------------+        +--------------------+
 ```
