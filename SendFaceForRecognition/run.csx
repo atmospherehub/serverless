@@ -10,20 +10,10 @@ using System.Data.SqlClient;
 using CM = System.Configuration.ConfigurationManager;
 using Dapper;
 
-
-
 private const string FACE_API_SERVICE = CM.AppSettings["FaceAPIService"];
-
 public static readonly string connectionString = CM.ConnectionStrings["Atmosphere"].ConnectionString;
-
 public const string CONTAINER_NAME_OUTPUT = "rectangles";
-
 public const int MAX_FACES_PER_PERSON = 248;
-
-public static JsonSerializerSettings settings = new JsonSerializerSettings()
-{
-    ContractResolver = new CamelCasePropertyNamesContractResolver()
-};
 
 public static async Task Run(string faceForRecognition, TraceWriter log)
 {
@@ -46,7 +36,7 @@ public static async Task Run(string faceForRecognition, TraceWriter log)
     var user = await getUsersMap(slackInput, log);
     if (user == null)
     {
-        user = new userMap
+        user = new UserMap
         {
             SlackUid = slackInput.FaceUserId,
             CognitiveUid = await createPerson(slackInput.FaceUserId, log)
@@ -55,8 +45,8 @@ public static async Task Run(string faceForRecognition, TraceWriter log)
     }
 
     await addPersonFace(
-        user, 
-        $"{CM.AppSettings["images_endpoint"]}/{CONTAINER_NAME_OUTPUT}/{slackInput.FaceId}.jpg", 
+        user,
+        $"{CM.AppSettings["images_endpoint"]}/{CONTAINER_NAME_OUTPUT}/{slackInput.FaceId}.jpg",
         log);
 }
 
@@ -66,7 +56,8 @@ private static async Task<string> createPerson(string slackUid, TraceWriter log)
     using (var client = new HttpClient())
     using (var request = new HttpRequestMessage(HttpMethod.Post, FACE_API_SERVICE + "/persons"))
     {
-        var requestBody = new {
+        var requestBody = new
+        {
             name = slackUid,
             userData = slackUid
         };
@@ -75,7 +66,7 @@ private static async Task<string> createPerson(string slackUid, TraceWriter log)
         var response = await client.SendAsync(request);
         var contents = await response.Content.ReadAsStringAsync();
         log.Info($"Received from 'create person' service {response.StatusCode}: {contents}");
-        return JsonConvert.DeserializeObject<PersonCreatedResponse>(contents, settings).PersonId;
+        return JsonConvert.DeserializeObject<PersonCreatedResponse>(contents).PersonId;
     }
 }
 
@@ -83,9 +74,10 @@ private static async Task<string> addPersonFace(UserMap data, string image, Trac
 {
     log.Info($"Add person face to Cognitive user: {data.CognitiveUid}, image: {image}");
     using (var client = new HttpClient())
-    using (var request = new HttpRequestMessage(HttpMethod.Post, FACE_API_SERVICE+"/persons/" + data.CognitiveUid + "/persistedFaces"))
+    using (var request = new HttpRequestMessage(HttpMethod.Post, FACE_API_SERVICE + "/persons/" + data.CognitiveUid + "/persistedFaces"))
     {
-        var requestBody = new {
+        var requestBody = new
+        {
             url = image
         };
         request.Headers.Add("Ocp-Apim-Subscription-Key", CM.AppSettings["FaceServiceAPIKey"]);
@@ -93,7 +85,7 @@ private static async Task<string> addPersonFace(UserMap data, string image, Trac
         var response = await client.SendAsync(request);
         var contents = await response.Content.ReadAsStringAsync();
         log.Info($"Received from 'person add face' service {response.StatusCode}: {contents}");
-        return JsonConvert.DeserializeObject<AddFaceResponse>(contents, settings).PersistedFaceId;
+        return JsonConvert.DeserializeObject<AddFaceResponse>(contents).PersistedFaceId;
     }
 }
 
@@ -111,7 +103,7 @@ private static async Task saveUsersMap(UserMap data, TraceWriter log)
                     @SlackUid,
                     @CognitiveUid)",
             data);
-    }   
+    }
 }
 
 private static async Task<UserMap> getUsersMap(SlackNotification slackInput, TraceWriter log)
@@ -120,11 +112,10 @@ private static async Task<UserMap> getUsersMap(SlackNotification slackInput, Tra
     using (var connection = new SqlConnection(connectionString))
     {
         await connection.OpenAsync();
-        var res = await connection.QuerySingleOrDefaultAsync<UserMap>(
+        return await connection.QuerySingleOrDefaultAsync<UserMap>(
             @"SELECT * FROM [dbo].[UsersMap] WHERE SlackUid=@FaceUserId",
             slackInput);
-        return res;
-      }   
+    }
 }
 
 private static async Task<int> getCombinedVotes(SlackNotification slackInput, TraceWriter log)
@@ -169,10 +160,12 @@ public class UserMap
     public string CognitiveUid { get; set; }
 }
 
-public class PersonCreatedResponse{
+public class PersonCreatedResponse
+{
     public string PersonId { get; set; }
 }
 
-public class AddFaceResponse{
+public class AddFaceResponse
+{
     public string PersistedFaceId { get; set; }
 }
