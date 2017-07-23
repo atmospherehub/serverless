@@ -10,7 +10,7 @@ using System.Data.SqlClient;
 using CM = System.Configuration.ConfigurationManager;
 using Dapper;
 
-private const string FACE_API_SERVICE = CM.AppSettings["FaceAPIService"];
+private static readonly string FACE_API_SERVICE = CM.AppSettings["FaceAPIService"];
 public static readonly string connectionString = CM.ConnectionStrings["Atmosphere"].ConnectionString;
 public const string CONTAINER_NAME_OUTPUT = "rectangles";
 public const int MAX_FACES_PER_PERSON = 248;
@@ -22,7 +22,7 @@ public static async Task Run(string faceForRecognition, TraceWriter log)
     var totalCombined = await getCombinedVotes(slackInput, log);
     var totalVotesPerUser = await getTotalVotesPerUser(slackInput, log);
 
-    if (totalCombined < 2)
+    if (totalCombined < 0)
     {
         log.Info($"Not enough votes for single user");
         return;
@@ -42,11 +42,7 @@ public static async Task Run(string faceForRecognition, TraceWriter log)
             SlackUid = slackInput.FaceUserId,
             CognitiveUid = (await callFacesAPI<PersonCreatedResponse>(
                 null,
-                new
-                {
-                    name = slackInput.FaceUserId,
-                    userData = slackInput.FaceUserId
-                },
+                new { name = slackInput.FaceUserId },
                 log)).PersonId
         };
         await saveUsersMap(user, log);
@@ -63,15 +59,19 @@ public static async Task Run(string faceForRecognition, TraceWriter log)
 
 private static async Task<T> callFacesAPI<T>(string apiPath, dynamic requestObject, TraceWriter log)
 {
-    log.Info($"Calling API at path [{FACE_API_SERVICE}/persons{apiPath}]");
+    var payload = JsonConvert.SerializeObject(requestObject ?? new { });
+    log.Info($"Calling API at path [{FACE_API_SERVICE}/persons{apiPath}] with payload {payload}");
     using (var client = new HttpClient())
     using (var request = new HttpRequestMessage(HttpMethod.Post, $"{FACE_API_SERVICE}/persons{apiPath}"))
     {
         request.Headers.Add("Ocp-Apim-Subscription-Key", CM.AppSettings["FaceServiceAPIKey"]);
         if (apiPath != null)
-            request.Content = new StringContent(JsonConvert.SerializeObject(apiPath), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(payload, Encoding.UTF8, "application/json");
         var response = await client.SendAsync(request);
-        var contents = await response.Content.ReadAsStringAsync();
+        var contents = await response.Content.ReadAsStringAsync();        
+        if(!response.IsSuccessStatusCode)
+            throw new InvalidOperationException($"Received result from faces API {response.StatusCode}: {contents}");
+
         log.Info($"Received result from faces API {response.StatusCode}: {contents}");
         return JsonConvert.DeserializeObject<T>(contents);
     }
