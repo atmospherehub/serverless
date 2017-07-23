@@ -29,33 +29,35 @@ public static async Task Run(string faceForRecognition, TraceWriter log)
 {
     log.Info($"Triggered  - slackInput:{faceForRecognition}");
     var slackInput = JsonConvert.DeserializeObject<SlackNotification>(faceForRecognition);
-    var imgUrl = $"{CM.AppSettings["images_endpoint"]}/{CONTAINER_NAME_OUTPUT}/{slackInput.FaceId}.jpg";
-
     var totalCombined = await getCombinedVotes(slackInput, log);
     var totalVotesPerUser = await getTotalVotesPerUser(slackInput, log);
 
-    if(totalCombined > 1 && totalVotesPerUser < MAX_FACES_PER_PERSON)
-    {  
-        var getedUsersMap = await getUsersMap(slackInput, log);
-        if(getedUsersMap!= null){
-            // Add face to person (face API) in Cognitive
-            log.Info($"Adding face to person.");
-            await addPersonFace(getedUsersMap, imgUrl, log);
-
-        }else{
-            // Create person in Cognitive
-            var createdPerson = await createPerson(slackInput.FaceUserId,log);
-
-            // Create usersMap in DB
-            var userMapping = new UserMap();
-            userMapping.SlackUid = slackInput.FaceUserId;
-            userMapping.CognitiveUid = createdPerson;
-            await saveUsersMap(userMapping,log);
-
-            // Add face to person (face API) in Cognitive
-            await addPersonFace(userMapping, imgUrl, log);
-        }
+    if (totalCombined < 2)
+    {
+        log.Info($"Not enough votes for single user");
+        return;
     }
+    if (totalVotesPerUser > MAX_FACES_PER_PERSON)
+    {
+        log.Info($"Reached limit of images per person");
+        return;
+    }
+
+    var user = await getUsersMap(slackInput, log);
+    if (user == null)
+    {
+        user = new userMap
+        {
+            SlackUid = slackInput.FaceUserId,
+            CognitiveUid = await createPerson(slackInput.FaceUserId, log)
+        };
+        await saveUsersMap(user, log);
+    }
+
+    await addPersonFace(
+        user, 
+        $"{CM.AppSettings["images_endpoint"]}/{CONTAINER_NAME_OUTPUT}/{slackInput.FaceId}.jpg", 
+        log);
 }
 
 private static async Task<string> createPerson(string slackUid, TraceWriter log)
