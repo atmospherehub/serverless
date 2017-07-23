@@ -4,8 +4,8 @@ The flow responseble for sending faces into slack channel to allow users to tag.
 
 ```
           ?+--+[topic] atmosphere+images+in+db
-		  +
-		  |
+          +
+          |
 +---------v----------+ 
 | SendFaceForTagging | 
 +--------------------+ 
