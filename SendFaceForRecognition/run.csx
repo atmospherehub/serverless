@@ -84,12 +84,8 @@ private static async Task saveUsersMap(UserMap data, TraceWriter log)
     {
         await connection.OpenAsync();
         await connection.ExecuteAsync(
-            @"
-        INSERT INTO [dbo].[UsersMap] (
-            [SlackUid],
-            [CognitiveUid]) VALUES (
-            @SlackUid,
-            @CognitiveUid)",
+            @"INSERT INTO [dbo].[UsersMap] ([SlackUid], [CognitiveUid]) 
+              VALUES (@SlackUid, @CognitiveUid)",
             data);
     }
 }
@@ -101,7 +97,7 @@ private static async Task<UserMap> getUsersMap(SlackNotification slackInput, Tra
     {
         await connection.OpenAsync();
         return await connection.QuerySingleOrDefaultAsync<UserMap>(
-            @"SELECT * FROM [dbo].[UsersMap] WHERE SlackUid=@FaceUserId",
+            "SELECT * FROM [dbo].[UsersMap] WHERE SlackUid=@FaceUserId",
             slackInput);
     }
 }
@@ -113,9 +109,9 @@ private static async Task<int> getCombinedVotes(SlackNotification slackInput, Tr
     {
         await connection.OpenAsync();
         return await connection.ExecuteScalarAsync<int>(
-            $@"SELECT COUNT(*)
-    FROM [dbo].[FaceTags]
-    WHERE FaceId=@FaceId AND FaceUserId=@FaceUserId",
+            @"SELECT COUNT(*)
+              FROM [dbo].[FaceTags]
+              WHERE FaceId=@FaceId AND FaceUserId=@FaceUserId",
             slackInput);
     }
 }
@@ -127,9 +123,9 @@ private static async Task<int> getTotalVotesPerUser(SlackNotification slackInput
     {
         await connection.OpenAsync();
         return await connection.ExecuteScalarAsync<int>(
-            $@"SELECT COUNT(*)
-    FROM [dbo].[FaceTags]
-    WHERE FaceUserId=@FaceUserId",
+            @"SELECT COUNT(*)
+              FROM [dbo].[FaceTags]
+              WHERE FaceUserId=@FaceUserId",
             slackInput);
     }
 }
