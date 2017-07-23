@@ -32,5 +32,15 @@ namespace Common
             var block = container.GetBlockBlobReference(fileName);
             block.UploadFromStream(stream);
         }
+
+        public static void DeleteBlob(string containerName, string fileName)
+        {
+            if (String.IsNullOrEmpty(containerName)) throw new ArgumentNullException(nameof(containerName));
+            if (String.IsNullOrEmpty(fileName)) throw new ArgumentNullException(nameof(fileName));
+
+            var container = _blobClient.GetContainerReference(containerName);
+            var blockBlob = container.GetBlockBlobReference(fileName);
+            blockBlob.DeleteIfExists();
+        }
     }
 }

@@ -3,7 +3,6 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
-using Microsoft.WindowsAzure.Storage;
 using Upload.Models;
 
 namespace Upload
@@ -23,7 +22,7 @@ namespace Upload
             if (processedImage.Rectangles == null || processedImage.Rectangles.Length == 0)
             {
                 log.Info($"No faces were detected => deleting blob");
-                deleteBlob(processedImage.ImageName);
+                BlobStorageClient.DeleteBlob(Settings.CONTAINER_FACES, processedImage.ImageName);
             }
             else
             {
@@ -32,13 +31,6 @@ namespace Upload
             }
         }
 
-        private static void deleteBlob(string fileName)
-        {
-            var storageAccount = CloudStorageAccount.Parse(Settings.Get("funcatmosphere_STORAGE"));
-            var blobClient = storageAccount.CreateCloudBlobClient();
-            var container = blobClient.GetContainerReference(Settings.CONTAINER_FACES);
-            var blockBlob = container.GetBlockBlobReference(fileName);
-            blockBlob.DeleteIfExists();
-        }
+        
     }
 }

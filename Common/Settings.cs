@@ -12,8 +12,11 @@ namespace Common
         public const string CONTAINER_FACES = "faces";
         public const string CONTAINER_RECTANGLES = "rectangles";
         public const string CONTAINER_ZOOMIN = "zoomin";
+        public static readonly string IMAGES_ENDPOINT = Settings.Get("images_endpoint");
 
         public static readonly string SQL_CONN_STRING = Settings.GetConnection("Atmosphere");
+
+        public static readonly TimeZoneInfo LOCAL_TIMEZONE = TimeZoneInfo.FindSystemTimeZoneById("Israel Standard Time");
 
         public static string Get(string name)
         {

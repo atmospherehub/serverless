@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{924F93B4-E
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tagging", "Tagging\Tagging.csproj", "{407EDFB2-6A54-4D1C-93BB-69E2B80919DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{B3AA8B4B-E5BA-41C0-BCDF-014AA4A88109}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3AA8B4B-E5BA-41C0-BCDF-014AA4A88109}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3AA8B4B-E5BA-41C0-BCDF-014AA4A88109}.Release|Any CPU.Build.0 = Release|Any CPU
+		{407EDFB2-6A54-4D1C-93BB-69E2B80919DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{407EDFB2-6A54-4D1C-93BB-69E2B80919DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{407EDFB2-6A54-4D1C-93BB-69E2B80919DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{407EDFB2-6A54-4D1C-93BB-69E2B80919DD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
