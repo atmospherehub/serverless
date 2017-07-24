@@ -7,7 +7,7 @@ namespace Common
 {
     public static class BlobStorageClient
     {
-        private static readonly CloudBlobClient _blobClient = CloudStorageAccount.Parse(Settings.STORAGE_CONN_NAME).CreateCloudBlobClient();
+        private static readonly CloudBlobClient _blobClient = CloudStorageAccount.Parse(Settings.STORAGE_CONN_STRING).CreateCloudBlobClient();
 
         public static Stream DownloadBlob(string containerName, string fileName)
         {
