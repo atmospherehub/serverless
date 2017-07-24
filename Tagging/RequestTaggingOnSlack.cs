@@ -4,6 +4,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.ServiceBus.Messaging;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,7 +38,7 @@ namespace Tagging
         {
             return new SlackMessage
             {
-                Attachments = new SlackMessage.Attachment[] {
+                Attachments = new List<SlackMessage.Attachment> {
                 new SlackMessage.Attachment {
                     Title = "Please identify user in the center of the image",
                     ImageUrl = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_ZOOMIN}/{faceId}.jpg"
