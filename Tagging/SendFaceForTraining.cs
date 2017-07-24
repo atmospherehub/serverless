@@ -64,11 +64,11 @@ namespace Tagging
         private static async Task<dynamic> callFacesAPI(string apiPath, dynamic requestObject, TraceWriter log)
         {
             var payload = (requestObject ?? new { }).ToJson();
-            log.Info($"Calling API at path [{Settings.Get("FaceAPIService")}/persons{apiPath}] with payload {payload}");
+            log.Info($"Calling API at path [/persons{apiPath}] with payload {payload}");
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, $"{Settings.Get("FaceAPIService")}/persons{apiPath}"))
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"{Settings.FACE_API_URL}/persons{apiPath}"))
             {
-                request.Headers.Add("Ocp-Apim-Subscription-Key", Settings.Get("FaceServiceAPIKey"));
+                request.Headers.Add("Ocp-Apim-Subscription-Key", Settings.FACE_API_TOKEN);
                 request.Content = new StringContent(payload, Encoding.UTF8, "application/json");
 
                 var response = await _client.SendAsync(request);

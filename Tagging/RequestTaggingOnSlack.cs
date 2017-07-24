@@ -24,7 +24,7 @@ namespace Tagging
             log.Info($"Topic trigger '{nameof(RequestTaggingOnSlack)}' with message: {message}");
             var face = message.FromJson<Face>();
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, Settings.Get("slack_webhook_url")))
+            using (var request = new HttpRequestMessage(HttpMethod.Post, Settings.SLACK_WEBHOOK_URL))
             {
                 var payload = getMessage(face.Id).ToJson(camelCasingMembers: true);
                 request.Content = new StringContent(payload, Encoding.UTF8, "application/json");

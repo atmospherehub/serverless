@@ -26,9 +26,9 @@ namespace Upload
         {
             log.Info($"Blob trigger '{nameof(SendToEmotion)}' with {name}");
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, Settings.Get("EmotionAPIService")))
+            using (var request = new HttpRequestMessage(HttpMethod.Post, Settings.EMOTION_API_URL))
             {
-                request.Headers.Add("Ocp-Apim-Subscription-Key", Settings.Get("EmotionServiceAPIKey"));
+                request.Headers.Add("Ocp-Apim-Subscription-Key", Settings.EMOTION_API_TOKEN);
                 request.Content = new StreamContent(inputStream);
                 request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 

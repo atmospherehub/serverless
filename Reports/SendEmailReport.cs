@@ -50,13 +50,13 @@ namespace Reports
 
         private static async Task sendEmail(Dictionary<string, string> substitutions, TraceWriter log)
         {
-            var client = new SendGridClient(Settings.Get("sendgreed_apikey"));
+            var client = new SendGridClient(Settings.SENDGRID_API_TOKEN);
             var subscribers = await getSubscribers();
             log.Info($"Found subscribers: {String.Join(", ", subscribers.Select(s => s.Email))}");
 
             var message = new SendGridMessage()
             {
-                From = new EmailAddress(Settings.Get("reports_sender_address"), EMAIL_FROM_NAME),
+                From = new EmailAddress(Settings.SENDER_EMAIL_ADDRESS, EMAIL_FROM_NAME),
                 TemplateId = TEMPLATE_ID,
                 Personalizations = subscribers
                         .Select(e => new Personalization
