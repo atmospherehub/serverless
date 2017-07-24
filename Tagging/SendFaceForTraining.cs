@@ -14,7 +14,7 @@ namespace Tagging
 {
     public static class SendFaceForTraining
     {
-        private const int REQUIRED_VOTES_FROM_DIFF_USERS = 2;
+        private static readonly int REQUIRED_VOTES_FROM_DIFF_USERS = Int32.Parse(Settings.Get("REQUIRED_VOTES_FOR_SENDING_TO_FACE_API") ?? "2");
         private const int MAX_IMAGES_PER_PERSON = 248;
 
         private static readonly HttpClient _client = new HttpClient();
