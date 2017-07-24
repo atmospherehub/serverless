@@ -1,0 +1,8 @@
+version: 1.0.{build}
+image: Visual Studio 2017 Preview
+build:
+  project: /atmosphere-serverless.sln
+  verbosity: normal
+test: off
+install:
+- nuget restore
