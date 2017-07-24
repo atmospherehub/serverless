@@ -6,7 +6,7 @@ namespace Common
     public static class Settings
     {
         public const string STORAGE_CONN_NAME = "funcatmosphere_STORAGE";
-        public static readonly string STORAGE_CONN_STRING = Settings.GetConnection(STORAGE_CONN_NAME);
+        public static readonly string STORAGE_CONN_STRING = Settings.Get(STORAGE_CONN_NAME);
         public const string SB_CONN_NAME = "dm-common-servicebus";
         public static readonly string SQL_CONN_STRING = Settings.GetConnection("Atmosphere");
 
