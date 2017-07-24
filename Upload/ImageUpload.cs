@@ -17,7 +17,7 @@ namespace Upload
             [Blob(blobPath: "faces/{rand-guid}.jpg", Connection = Settings.STORAGE_CONN_NAME)] Stream outputBlob,
             TraceWriter log)
         {
-            log.Info($"Triggered '{nameof(ImageUpload)}'");
+            log.Info($"Triggered '{nameof(ImageUpload)}' {Settings.IMAGES_ENDPOINT}");
 
             if (!request.Content.IsMimeMultipartContent())
                 return request.CreateResponse(HttpStatusCode.UnsupportedMediaType);

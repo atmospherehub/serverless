@@ -27,7 +27,7 @@ namespace Common
         public static readonly string SENDGRID_API_TOKEN = Settings.Get("sendgreed_apikey");
         public static readonly string SENDER_EMAIL_ADDRESS = Settings.Get("reports_sender_address");
 
-        private static string Get(string name)
+        public static string Get(string name)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
             return ConfigurationManager.AppSettings[name];
@@ -36,7 +36,7 @@ namespace Common
         public static string GetConnection(string name)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-            return ConfigurationManager.ConnectionStrings[name]?.ConnectionString;
+            return ConfigurationManager.ConnectionStrings[name]?.ConnectionString ?? Get($"ConnectionStrings_{name}");
         }
     }
 }
