@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Upload.Models
+namespace Common.Models
 {
     public class Face
     {

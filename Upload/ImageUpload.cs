@@ -13,7 +13,7 @@ namespace Upload
     {
         [FunctionName(nameof(ImageUpload))]
         public static async Task<HttpResponseMessage> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequestMessage request,
+            [HttpTrigger(AuthorizationLevel.Function, "post")]HttpRequestMessage request,
             [Blob(blobPath: "faces/{rand-guid}.jpg", Connection = Settings.STORAGE_CONN_NAME)] Stream outputBlob,
             TraceWriter log)
         {
