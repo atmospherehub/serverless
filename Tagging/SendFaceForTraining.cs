@@ -78,7 +78,7 @@ namespace Tagging
                 {
                     // TODO:
                     // Hanlde: "No face detected in the image."
-                    // * The image should be at least 50px
+                    // * The image should be at least 50px (for smaller images sent another informational Slack message and don't offer tagging)
                     // * When an error returned we should:
                     //     * Remove it from table `FaceTags` WHERE [FaceId] = ''
                     //     * Send to slack message 'The face is not suitable on this image for training'

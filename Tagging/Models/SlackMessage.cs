@@ -22,6 +22,9 @@ namespace Tagging.Models
             [JsonProperty("image_url")]
             public string ImageUrl { get; set; }
 
+            [JsonProperty("thumb_url")]
+            public string ThumbnailUrl { get; set; }
+
             public SlackAction[] Actions { get; set; }
 
             public string Text { get; set; }

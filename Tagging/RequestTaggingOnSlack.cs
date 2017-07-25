@@ -38,23 +38,28 @@ namespace Tagging
         {
             return new SlackMessage
             {
-                Attachments = new List<SlackMessage.Attachment> {
-                new SlackMessage.Attachment {
-                    Title = "Please identify user in the center of the image",
-                    ImageUrl = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_ZOOMIN}/{faceId}.jpg"
-                },
-                new SlackMessage.Attachment {
-                    AttachmentType = "default",
-                    Color = "#3AA3E3",
-                    CallbackId = faceId.ToString(),
-                    Actions = new[] {
-                        new SlackMessage.SlackAction {
-                            Name = "tagged_person",
-                            Type = "select",
-                            DataSource = "users"
+                Attachments = new List<SlackMessage.Attachment>
+                {
+                    new SlackMessage.Attachment
+                    {
+                        Title = "Please identify user",
+                        Text = "The image on the right is a thumbnail version of image below. Avoid tagging if the face on thumb is not clear, blured or too small.",
+                        ThumbnailUrl = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{faceId}.jpg"
+                    },
+                    new SlackMessage.Attachment
+                    {
+                        Text = String.Empty,
+                        ImageUrl = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_ZOOMIN}/{faceId}.jpg",
+                        CallbackId = faceId.ToString(),
+                        Actions = new[]
+                        {
+                            new SlackMessage.SlackAction {
+                                Name = "tagged_person",
+                                Type = "select",
+                                DataSource = "users"
+                            }
                         }
                     }
-                }
                 }
             };
         }

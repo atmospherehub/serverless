@@ -73,13 +73,16 @@ namespace Tagging
             var attachment = original.Attachments[2];
 
             // preserve a list of users who performed tagging
-            var usersWhoTagged = attachment.CallbackId
+            var usersWhoTaggedTillNow = attachment.CallbackId
                 .Split(',')
                 .Select(u => u.Trim())
                 .Where(u => !String.IsNullOrEmpty(u))
-                .Union(new string[] { taggedBy })
-                .Distinct();
-            attachment.CallbackId = String.Join(", ", usersWhoTagged);
+                .ToList();
+
+            // store users who voted till now + the user that voted now
+            attachment.CallbackId = String.Join(
+                ", ",
+                usersWhoTaggedTillNow.Union(new string[] { taggedBy }).Distinct());
             attachment.Text = $"Person tagged by {attachment.CallbackId} as:";
 
             // show which persons were picked for tagging
@@ -93,6 +96,7 @@ namespace Tagging
                 };
                 attachment.Fields.Add(field);
             }
+
             field.Value = (Int32.Parse(field.Value) + 1).ToString();
 
             return original;
