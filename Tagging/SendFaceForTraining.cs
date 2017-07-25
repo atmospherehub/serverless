@@ -63,7 +63,7 @@ namespace Tagging
 
         private static async Task<dynamic> callFacesAPI(string apiPath, dynamic requestObject, TraceWriter log)
         {
-            var payload = (requestObject ?? new { }).ToJson();
+            var payload = ((object)(requestObject ?? new { })).ToJson();
             log.Info($"Calling API at path [/persons{apiPath}] with payload {payload}");
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"{Settings.FACE_API_URL}/persons{apiPath}"))
@@ -75,7 +75,15 @@ namespace Tagging
                 var contents = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
+                {
+                    // TODO:
+                    // Hanlde: "No face detected in the image."
+                    // * The image should be at least 50px
+                    // * When an error returned we should:
+                    //     * Remove it from table `FaceTags` WHERE [FaceId] = ''
+                    //     * Send to slack message 'The face is not suitable on this image for training'
                     throw new InvalidOperationException($"Received result from faces API {response.StatusCode}: {contents}");
+                }
 
                 log.Info($"Received result from faces API {response.StatusCode}: {contents}");
                 return contents.FromJson<dynamic>();
