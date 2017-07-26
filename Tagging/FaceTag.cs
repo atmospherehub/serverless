@@ -64,8 +64,8 @@ namespace Tagging
                 // no tagging was done before - add an attachment to store the votes
                 original.Attachments.Add(new SlackMessage.Attachment()
                 {
-                    CallbackId = String.Empty, // list of users who did tag
-                    Color = "#3AA3E3",
+                    CallbackId = String.Empty, // list of users who did tag,
+                    Color = "#36a64f"
                     Fields = new List<SlackMessage.Attachment.Field>()
                 });
             }
