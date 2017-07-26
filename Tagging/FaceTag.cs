@@ -65,7 +65,7 @@ namespace Tagging
                 original.Attachments.Add(new SlackMessage.Attachment()
                 {
                     CallbackId = String.Empty, // list of users who did tag,
-                    Color = "#36a64f"
+                    Color = "#36a64f",
                     Fields = new List<SlackMessage.Attachment.Field>()
                 });
             }
