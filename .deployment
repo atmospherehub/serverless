@@ -1,2 +1,2 @@
 [config]
-command = deploy-deploy.cmd
+command = azure-deploy.cmd

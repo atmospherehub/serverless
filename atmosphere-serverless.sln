@@ -15,7 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{924F93B4-E
 		.gitignore = .gitignore
 		appveyor.yml = appveyor.yml
 		azure-deploy.cmd = azure-deploy.cmd
-		deploy-deploy.cmd = deploy-deploy.cmd
 		README.md = README.md
 	EndProjectSection
 EndProject
