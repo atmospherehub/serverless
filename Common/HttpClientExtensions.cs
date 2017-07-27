@@ -13,7 +13,7 @@ namespace Common
             var payload = await result.Content.ReadAsStringAsync();
 
             if (!result.IsSuccessStatusCode)
-                throw new HttpRequestException($"Received non successful response: [{result.StatusCode}] {payload}");
+                throw new HttpRequestException($"Received non successful response[{requestUri}]: [{result.StatusCode}] {payload}");
 
             return payload.FromJson<T>();
         }
