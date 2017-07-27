@@ -2,7 +2,7 @@
 
 namespace Tagging.Models
 {
-    public class SlackResponse
+    public class SlackActionResponse
     {
         public SlackAction[] Actions { get; set; }
 

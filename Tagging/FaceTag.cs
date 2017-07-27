@@ -29,7 +29,7 @@ namespace Tagging
 
             log.Info($"Received payload {rawPayload}");
 
-            var slackMessage = rawPayload.FromJson<SlackResponse>();
+            var slackMessage = rawPayload.FromJson<SlackActionResponse>();
             var faceUserId = slackMessage.Actions?.FirstOrDefault()?.SelectedOptions?.FirstOrDefault()?.Value;
 
             if (String.IsNullOrEmpty(faceUserId)) throw new InvalidOperationException("No user was selected");

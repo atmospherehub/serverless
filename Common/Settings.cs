@@ -18,6 +18,7 @@ namespace Common
         public static readonly TimeZoneInfo LOCAL_TIMEZONE = TimeZoneInfo.FindSystemTimeZoneById("Israel Standard Time");
 
         public static readonly string SLACK_WEBHOOK_URL = Settings.Get("slack_webhook_url");
+        public static readonly string SLACK_API_TOKEN = Settings.Get("slack_api_token");
 
         public static readonly string FACE_API_URL = Settings.Get("FaceAPIService");
         public static readonly string FACE_API_TOKEN = Settings.Get("FaceServiceAPIKey");

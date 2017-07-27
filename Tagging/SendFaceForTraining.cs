@@ -25,6 +25,7 @@ namespace Tagging
             [ServiceBusTrigger("atmosphere-face-tagged", AccessRights.Listen, Connection = Settings.SB_CONN_NAME)]string message,
             [ServiceBus("atmosphere-face-cleanup", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> cleanupQueue,
             [ServiceBus("atmosphere-face-training-sent", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> trainingSentQueue,
+            [ServiceBus("atmosphere-face-enrich-user", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> enrichQueue,
             TraceWriter log)
         {
             log.Info($"Queue trigger '{nameof(SendFaceForTraining)}' with message: {message}");
@@ -64,6 +65,7 @@ namespace Tagging
                     CognitiveUid = faceApiMapping.PersonId
                 };
                 await saveUsersMap(user);
+                enrichQueue.Add(user.ToJson());
                 log.Info($"Stored new user map {user.ToJson()}");
             }
 

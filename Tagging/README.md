@@ -5,7 +5,7 @@ The flow responseble for sending faces into slack channel to allow users to tag.
 ```
 ?+--+[topic] atmosphere+images+in+db
 +
-|     +-----------------------+
++     +-----------------------+
 +?+---> RequestTaggingOnSlack |
       +-----------------------+
 
@@ -15,20 +15,24 @@ The flow responseble for sending faces into slack channel to allow users to tag.
                                                                    |
       +-----------------------+        +-----------------------+   +    +-----------------------+
       |         FaceTag       +--+?+--->   StoreFaceTagSql     +--+?+---> SendFaceForTraining   |
-      +-----------------------+   +    +-----------------------+        +--------+------+-------+
-                                  |						    					 |      |
-                                  ++[queue] atmosphere+face+tagging              |      |
-                                                                                 |      |
-                                                  +------------------------------+      |
-                                                  |                                     |
-                                                  |    atmosphere-face-cleanup [queue]++?
-           atmosphere-face-training-sent [queue]++?                                     |
-                                                  |                                 +---+
-                                                  |                                 |
-                                       +----------v------------+        +-----------v-----------+
-                                       |       FinalizeTag     |        |       CleanupTag      |
-                                       +-----------------------+        +-----------------------+
-
-
+      +-----------------------+   +    +-----------+------+----+        +---------+--+--+-------+
+                                  |						    					  |  |  |
+                                  ++[queue] atmosphere+face+tagging               |  |  |
+                                                                                  |  |  |
+                   +--------------------------------------------------------------+  |  |
+                   |                                                                 +  |
+                   |                          atmosphere+face+training+sent [queue]++?  |
+                   |                                                                 +  |
+                   ?++[queue] atmosphere-face-enrich-user                            |  |
+                   |                                                                 |  |
+                   |                              +----------------------------------+  |
+                   |                              |                                     +
+                   |                              +    atmosphere+face+cleanup [queue]++?
+                   |                              ?                                     +
+                   |                              +                                 +---+
+                   |                              |                                 |
+       +-----------v-----------+       +----------v------------+        +-----------v-----------+
+       |      EnrichUser       |       |       FinalizeTag     |        |       CleanupTag      |
+       +-----------------------+       +-----------------------+        +-----------------------+
 
 ```
