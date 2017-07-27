@@ -64,7 +64,7 @@ namespace Tagging
                 // no tagging was done before - add an attachment to store the votes
                 original.Attachments.Add(new SlackMessage.Attachment()
                 {
-                    CallbackId = String.Empty, // list of users who did tag,
+                    CallbackId = null, // list of users who did tag,
                     Color = "#3aa3e3",
                     Fields = new List<SlackMessage.Attachment.Field>()
                 });
@@ -73,31 +73,24 @@ namespace Tagging
             var attachment = original.Attachments[2];
 
             // preserve a list of users who performed tagging
-            var usersWhoTaggedTillNow = attachment.CallbackId
-                .Split(',')
-                .Select(u => u.Trim())
-                .Where(u => !String.IsNullOrEmpty(u))
+            var usersWhoTagged = (attachment.CallbackId ?? "[]").FromJson<List<string>>()
+                .Union(new string[] { taggedBy })
+                .Distinct()
                 .ToList();
 
             // store users who voted till now + the user that voted now
-            attachment.CallbackId = String.Join(
-                ", ",
-                usersWhoTaggedTillNow.Union(new string[] { taggedBy }).Distinct());
-            attachment.Text = $"Person tagged by {attachment.CallbackId} as:";
+            attachment.CallbackId = usersWhoTagged.ToJson();
 
-            // show which persons were picked for tagging
-            var field = attachment.Fields.FirstOrDefault(f => f.Title == faceUserId);
-            if (field == null)
+            switch (usersWhoTagged.Count)
             {
-                field = new SlackMessage.Attachment.Field
-                {
-                    Title = faceUserId,
-                    Value = "0"
-                };
-                attachment.Fields.Add(field);
+                case 1:
+                    attachment.Text = $"Person tagged by {usersWhoTagged.First()}";
+                    break;
+                default:
+                    attachment.Text = $"Person tagged by {String.Join(", ", usersWhoTagged.Take(usersWhoTagged.Count - 1))} and {usersWhoTagged.Last()}";
+                    break;
             }
-
-            field.Value = (Int32.Parse(field.Value) + 1).ToString();
+            
 
             return original;
         }
