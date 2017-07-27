@@ -13,11 +13,8 @@ namespace Tagging
 {
     public static class EnrichUser
     {
-        private static readonly HttpClient _client = new HttpClient()
-        {
-            BaseAddress = new Uri($"https://slack.com/api/users.info?token={Settings.SLACK_API_TOKEN}")
-        };
-
+        private static readonly string API_ADDRESS_FORMAT = $"https://slack.com/api/users.info?token={Settings.SLACK_API_TOKEN}&user={{0}}";
+        private static readonly HttpClient _client = new HttpClient();
 
         [FunctionName(nameof(EnrichUser))]
         public static async Task Run(
@@ -27,7 +24,7 @@ namespace Tagging
             log.Info($"Queue trigger '{nameof(EnrichUser)}' with message: {message}");
             var userMap = message.FromJson<UserMap>();
 
-            var userInfo = await _client.GetAsync<UserInfoResponse>($"&user={userMap.SlackUid}");
+            var userInfo = await _client.GetAsync<UserInfoResponse>(String.Format(API_ADDRESS_FORMAT, userMap.SlackUid));
             log.Info($"Received from Slack API {userInfo.ToJson()}");
 
             using (var connection = new SqlConnection(Settings.SQL_CONN_STRING))
