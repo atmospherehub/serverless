@@ -56,7 +56,7 @@ namespace Tagging
                         Title = "Please identify user",
                         Text = "The image on the right is a thumbnail version of image below. Avoid tagging if the face on thumb is not clear, blured or too small.",
                         ThumbnailUrl = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{faceId}.jpg",
-                        Color = "#36a64f"
+                        Color = "#3aa3e3"
                     },
                     new SlackMessage.Attachment
                     {
@@ -71,7 +71,7 @@ namespace Tagging
                                 DataSource = "users"
                             }
                         },
-                        Color = "#36a64f"
+                        Color = "#3aa3e3"
                     }
                 }
         };
@@ -82,8 +82,8 @@ namespace Tagging
                 {
                     new SlackMessage.Attachment
                     {
-                        Title = "Image won't be used for training",
-                        Text = $"The face that appears on image is too small: {imageSize.Width}x{imageSize.Height}px",
+                        Title = "Image cannot be used",
+                        Text = $"The face that appears on image is too small {imageSize}",
                         ThumbnailUrl = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{faceId}.jpg",
                         Color = "#f1828c"
                     }

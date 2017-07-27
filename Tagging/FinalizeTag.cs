@@ -38,8 +38,8 @@ namespace Tagging
                 {
                     new SlackMessage.Attachment
                     {
-                        Title = "Please identify user",
-                        Text = $"Tagging successfully completed for the face on the image.",
+                        Title = "Success",
+                        Text = $"Image was successfully added to the model.",
                         ThumbnailUrl = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{faceId}.jpg",
                         Color = "#36a64f"
                     }

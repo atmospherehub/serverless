@@ -29,7 +29,7 @@ namespace Tagging
         {
             log.Info($"Queue trigger '{nameof(SendFaceForTraining)}' with message: {message}");
             var slackInput = message.FromJson<TaggingMessage>();
-            
+
             // check if the slack message's votes got to the point that
             // * The required number of people taged face as same person => the image should be submitted to congetive service 
             // * Not enough votes => wait for more
@@ -40,7 +40,7 @@ namespace Tagging
                 log.Info($"Not enough votes for face on image. Requires at least {REQUIRED_VOTES_FROM_DIFF_USERS} different user votes to vote for the same user.");
                 return;
             }
-            else if(votesForSamePerson > REQUIRED_VOTES_FROM_DIFF_USERS)
+            else if (votesForSamePerson > REQUIRED_VOTES_FROM_DIFF_USERS)
             {
                 log.Info($"Voting alredy closed for the faceId {slackInput.FaceId}, meaning the image was already submitted.");
                 return;
@@ -57,11 +57,11 @@ namespace Tagging
             if (user == null)
             {
                 log.Info($"Creating mapping for slackId and cognitiveId");
-                var faceApiMapping = await callFacesAPI(null, new { name = slackInput.FaceUserId }, log);
+                var faceApiMapping = await callFacesAPI<CreateUserResponse>(null, new { name = slackInput.FaceUserId }, log);
                 user = new UserMap
                 {
                     SlackUid = slackInput.FaceUserId,
-                    CognitiveUid = faceApiMapping.personId
+                    CognitiveUid = faceApiMapping.PersonId
                 };
                 await saveUsersMap(user);
                 log.Info($"Stored new user map {user.ToJson()}");
@@ -71,7 +71,7 @@ namespace Tagging
             {
                 // image submitted only once to congetive when a required number of votes reached
                 // once submitted we need to prevent any more voting on slack image
-                await callFacesAPI(
+                await callFacesAPI<dynamic>(
                     $"/{user.CognitiveUid}/persistedFaces",
                     new { url = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{slackInput.FaceId}.jpg" },
                     log);
@@ -86,7 +86,8 @@ namespace Tagging
             }
         }
 
-        private static async Task<dynamic> callFacesAPI(string apiPath, dynamic requestObject, TraceWriter log)
+        private static async Task<T> callFacesAPI<T>(string apiPath, dynamic requestObject, TraceWriter log)
+            where T : class
         {
             var payload = ((object)(requestObject ?? new { })).ToJson();
             log.Info($"Calling API at path [/persons{apiPath}] with payload {payload}");
@@ -103,7 +104,7 @@ namespace Tagging
                     throw new InvalidOperationException($"Received result from faces API {response.StatusCode}: {contents}");
 
                 log.Info($"Received result from faces API {response.StatusCode}: {contents}");
-                return contents.FromJson<dynamic>();
+                return contents.FromJson<T>();
             }
         }
 

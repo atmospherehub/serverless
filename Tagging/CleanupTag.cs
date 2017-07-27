@@ -56,8 +56,8 @@ namespace Tagging
                 {
                     new SlackMessage.Attachment
                     {
-                        Title = "Please identify user",
-                        Text = $"Something went wrong - we cannot user this image for training.",
+                        Title = "Something went wrong",
+                        Text = $"The image cannot be used for model. Either it is too small, the face is blured or not visible.",
                         ThumbnailUrl = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{faceId}.jpg",
                         Color = "#f1828c"
                     }
