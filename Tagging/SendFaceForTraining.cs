@@ -21,7 +21,7 @@ namespace Tagging
 
         [FunctionName(nameof(SendFaceForTraining))]
         public static async Task Run(
-            [ServiceBusTrigger("atmosphere-face-tagged", "face-training", AccessRights.Listen, Connection = Settings.SB_CONN_NAME)]string message,
+            [ServiceBusTrigger("atmosphere-face-tagged", AccessRights.Listen, Connection = Settings.SB_CONN_NAME)]string message,
             TraceWriter log)
         {
             log.Info($"Topic trigger '{nameof(SendFaceForTraining)}' with message: {message}");
@@ -55,10 +55,17 @@ namespace Tagging
                 log.Info($"Stored new user map {user.ToJson()}");
             }
 
-            await callFacesAPI(
-                $"/{user.CognitiveUid}/persistedFaces",
-                new { url = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{slackInput.FaceId}.jpg" },
-                log);
+            try
+            {
+                await callFacesAPI(
+                    $"/{user.CognitiveUid}/persistedFaces",
+                    new { url = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{slackInput.FaceId}.jpg" },
+                    log);
+            }
+            catch (InvalidOperationException)
+            {
+                
+            }
         }
 
         private static async Task<dynamic> callFacesAPI(string apiPath, dynamic requestObject, TraceWriter log)

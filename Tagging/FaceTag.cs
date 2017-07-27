@@ -19,7 +19,7 @@ namespace Tagging
         [FunctionName(nameof(FaceTag))]
         public static async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post")]HttpRequestMessage request,
-            [ServiceBus("atmosphere-face-tagging", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Topic)] ICollector<string> outputTopic,
+            [ServiceBus("atmosphere-face-tagging", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> outputTopic,
             TraceWriter log)
         {
             log.Info($"Triggered '{nameof(FaceTag)}'");
