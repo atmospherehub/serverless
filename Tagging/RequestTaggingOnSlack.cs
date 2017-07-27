@@ -83,7 +83,7 @@ namespace Tagging
                     new SlackMessage.Attachment
                     {
                         Title = "Image cannot be used",
-                        Text = $"The face that appears on image is too small {imageSize}",
+                        Text = $"The face that appears on the image is too small {imageSize.Width}x{imageSize.Height}px",
                         ThumbnailUrl = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{faceId}.jpg",
                         Color = "#f1828c"
                     }
