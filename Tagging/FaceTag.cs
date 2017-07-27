@@ -19,7 +19,7 @@ namespace Tagging
         [FunctionName(nameof(FaceTag))]
         public static async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post")]HttpRequestMessage request,
-            [ServiceBus("atmosphere-face-tagging", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> outputTopic,
+            [ServiceBus("atmosphere-face-tagging", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> outputQueue,
             TraceWriter log)
         {
             log.Info($"Triggered '{nameof(FaceTag)}'");
@@ -34,7 +34,7 @@ namespace Tagging
 
             if (String.IsNullOrEmpty(faceUserId)) throw new InvalidOperationException("No user was selected");
 
-            outputTopic.Add(new TaggingMessage
+            outputQueue.Add(new TaggingMessage
             {
                 FaceId = slackMessage.CallbackId,
                 FaceUserId = faceUserId,

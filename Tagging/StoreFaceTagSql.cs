@@ -16,10 +16,10 @@ namespace Tagging
         [FunctionName(nameof(StoreFaceTagSql))]
         public static async Task Run(
             [ServiceBusTrigger("atmosphere-face-tagging", AccessRights.Listen, Connection = Settings.SB_CONN_NAME)]string message,
-            [ServiceBus("atmosphere-face-tagged", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> outputTopic,
+            [ServiceBus("atmosphere-face-tagged", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> outputQueue,
             TraceWriter log)
         {
-            log.Info($"Topic trigger '{nameof(StoreFaceTagSql)}' with message: {message}");
+            log.Info($"Queue trigger '{nameof(StoreFaceTagSql)}' with message: {message}");
             var tagging = message.FromJson<TaggingMessage>();
 
             using (var connection = new SqlConnection(Settings.SQL_CONN_STRING))
@@ -41,7 +41,7 @@ namespace Tagging
                     });
             }
 
-            outputTopic.Add(message);
+            outputQueue.Add(message);
         }
     }
 }

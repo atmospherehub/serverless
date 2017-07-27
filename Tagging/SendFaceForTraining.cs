@@ -2,6 +2,7 @@ using Common;
 using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Azure.WebJobs.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 using System;
 using System.Data.SqlClient;
@@ -22,34 +23,45 @@ namespace Tagging
         [FunctionName(nameof(SendFaceForTraining))]
         public static async Task Run(
             [ServiceBusTrigger("atmosphere-face-tagged", AccessRights.Listen, Connection = Settings.SB_CONN_NAME)]string message,
+            [ServiceBus("atmosphere-face-cleanup", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> cleanupQueue,
+            [ServiceBus("atmosphere-face-training-sent", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> trainingSentQueue,
             TraceWriter log)
         {
-            log.Info($"Topic trigger '{nameof(SendFaceForTraining)}' with message: {message}");
-
-            var slackInput = message.FromJson<TaggingMessage>();            
-
-            if (await getFaceTagsOnImageCount(slackInput.FaceUserId, slackInput.FaceId) < REQUIRED_VOTES_FROM_DIFF_USERS)
+            log.Info($"Queue trigger '{nameof(SendFaceForTraining)}' with message: {message}");
+            var slackInput = message.FromJson<TaggingMessage>();
+            
+            // check if the slack message's votes got to the point that
+            // * The required number of people taged face as same person => the image should be submitted to congetive service 
+            // * Not enough votes => wait for more
+            // * Too many votes - edge case, only if two users voted simultaniously 
+            var votesForSamePerson = await getFaceTagsOnImageCount(slackInput.FaceUserId, slackInput.FaceId);
+            if (votesForSamePerson < REQUIRED_VOTES_FROM_DIFF_USERS)
             {
-                log.Info($"Not enough votes for face on image. Requires at least {REQUIRED_VOTES_FROM_DIFF_USERS} different user votes.");
+                log.Info($"Not enough votes for face on image. Requires at least {REQUIRED_VOTES_FROM_DIFF_USERS} different user votes to vote for the same user.");
+                return;
+            }
+            else if(votesForSamePerson > REQUIRED_VOTES_FROM_DIFF_USERS)
+            {
+                log.Info($"Voting alredy closed for the faceId {slackInput.FaceId}, meaning the image was already submitted.");
                 return;
             }
 
             if (await getFaceTagsCount(slackInput.FaceUserId) > MAX_IMAGES_PER_PERSON)
             {
-                log.Info($"Reached limit of images per person. Maximum amount is {MAX_IMAGES_PER_PERSON}");
+                log.Info($"Reached limit of images per person. Maximum amount is {MAX_IMAGES_PER_PERSON}. This means no more training required for the person.");
                 return;
             }
 
+            // ensure mapping of our identifier of user - SlackId has a mapping to user identifier on Cognetive service
             var user = await getUsersMap(slackInput.FaceUserId);
             if (user == null)
             {
+                log.Info($"Creating mapping for slackId and cognitiveId");
+                var faceApiMapping = await callFacesAPI(null, new { name = slackInput.FaceUserId }, log);
                 user = new UserMap
                 {
                     SlackUid = slackInput.FaceUserId,
-                    CognitiveUid = (await callFacesAPI(
-                        null,
-                        new { name = slackInput.FaceUserId },
-                        log)).PersonId
+                    CognitiveUid = faceApiMapping.PersonId
                 };
                 await saveUsersMap(user);
                 log.Info($"Stored new user map {user.ToJson()}");
@@ -57,14 +69,20 @@ namespace Tagging
 
             try
             {
+                // image submitted only once to congetive when a required number of votes reached
+                // once submitted we need to prevent any more voting on slack image
                 await callFacesAPI(
                     $"/{user.CognitiveUid}/persistedFaces",
                     new { url = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{slackInput.FaceId}.jpg" },
                     log);
+                trainingSentQueue.Add(message);
             }
             catch (InvalidOperationException)
             {
-                
+                // something went wrong, probably with image itself (e.g. blured) close voting
+                // and remove all taggin info perfored till now
+                log.Info($"Going to cleanup tagging for this faceId");
+                cleanupQueue.Add(message);
             }
         }
 
@@ -82,15 +100,7 @@ namespace Tagging
                 var contents = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
-                {
-                    // TODO:
-                    // Hanlde: "No face detected in the image."
-                    // * The image should be at least 50px (for smaller images sent another informational Slack message and don't offer tagging)
-                    // * When an error returned we should:
-                    //     * Remove it from table `FaceTags` WHERE [FaceId] = ''
-                    //     * Send to slack message 'The face is not suitable on this image for training'
                     throw new InvalidOperationException($"Received result from faces API {response.StatusCode}: {contents}");
-                }
 
                 log.Info($"Received result from faces API {response.StatusCode}: {contents}");
                 return contents.FromJson<dynamic>();
