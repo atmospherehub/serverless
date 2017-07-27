@@ -31,7 +31,7 @@ namespace Tagging
             {
                 await connection.OpenAsync();
                 await connection.ExecuteAsync(
-                    @"UPDATE [dbo].[UserMap] SET FirstName = @FirstName, LastName = @LastName, Email = @Email
+                    @"UPDATE [dbo].[UsersMap] SET FirstName = @FirstName, LastName = @LastName, Email = @Email
                       WHERE SlackUid = @SlackUid",
                     new
                     {
