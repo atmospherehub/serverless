@@ -16,7 +16,7 @@ The flow responseble for sending faces into slack channel to allow users to tag.
       +-----------------------+        +-----------------------+   +    +-----------------------+
       |         FaceTag       +--+?+--->   StoreFaceTagSql     +--+?+---> SendFaceForTraining   |
       +-----------------------+   +    +-----------+------+----+        +---------+--+--+-------+
-                                  |						    					  |  |  |
+                                  |						    		    |  |  |
                                   ++[queue] atmosphere+face+tagging               |  |  |
                                                                                   |  |  |
                    +--------------------------------------------------------------+  |  |
