@@ -61,7 +61,7 @@ namespace Tagging
                 user = new UserMap
                 {
                     SlackUid = slackInput.FaceUserId,
-                    CognitiveUid = faceApiMapping.PersonId
+                    CognitiveUid = faceApiMapping.personId
                 };
                 await saveUsersMap(user);
                 log.Info($"Stored new user map {user.ToJson()}");
