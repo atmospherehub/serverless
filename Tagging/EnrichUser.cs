@@ -27,6 +27,9 @@ namespace Tagging
             var userInfo = await _client.GetAsync<UserInfoResponse>(String.Format(API_ADDRESS_FORMAT, userMap.SlackUid));
             log.Info($"Received from Slack API {userInfo.ToJson()}");
 
+            if (!userInfo.Success)
+                return;
+
             using (var connection = new SqlConnection(Settings.SQL_CONN_STRING))
             {
                 await connection.OpenAsync();
