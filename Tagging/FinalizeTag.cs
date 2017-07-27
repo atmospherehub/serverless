@@ -25,21 +25,24 @@ namespace Tagging
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, slackInput.ResponseUrl))
             {
-                var payload = getMessage(slackInput.FaceId).ToJson(camelCasingMembers: true);
+                var payload = getMessage(
+                    slackInput.FaceId, 
+                    slackInput.OriginalMessage.Attachments[2].CallbackId.FromJson<List<string>>())
+                    .ToJson(camelCasingMembers: true);
                 request.Content = new StringContent(payload, Encoding.UTF8, "application/json");
                 var response = await _client.SendAsync(request);
                 log.Info($"Sent to Slack {payload} and received from service {response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
             }
         }
 
-        private static SlackMessage getMessage(string faceId) => new SlackMessage
+        private static SlackMessage getMessage(string faceId, List<string> votedUsers) => new SlackMessage
         {
             Attachments = new List<SlackMessage.Attachment>
                 {
                     new SlackMessage.Attachment
                     {
                         Title = "Success",
-                        Text = $"Image was successfully added to the model.",
+                        Text = $"Image was successfully added to the model. Thanks to {String.Join(", ", votedUsers)}.",
                         ThumbnailUrl = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{faceId}.jpg",
                         Color = "#36a64f"
                     }
