@@ -1,9 +1,11 @@
 using Common;
+using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.ServiceBus.Messaging;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,7 +28,8 @@ namespace Tagging
             using (var request = new HttpRequestMessage(HttpMethod.Post, slackInput.ResponseUrl))
             {
                 var payload = getMessage(
-                    slackInput.FaceId, 
+                    slackInput.FaceId,
+                    (await getName(slackInput.FaceUserId))?.FirstName,
                     slackInput.OriginalMessage.Attachments[2].CallbackId.FromJson<List<string>>())
                     .ToJson(camelCasingMembers: true);
                 request.Content = new StringContent(payload, Encoding.UTF8, "application/json");
@@ -35,14 +38,27 @@ namespace Tagging
             }
         }
 
-        private static SlackMessage getMessage(string faceId, List<string> votedUsers) => new SlackMessage
+        private static async Task<UserMap> getName(string faceUserId)
+        {
+            if (String.IsNullOrEmpty(faceUserId)) throw new ArgumentNullException(nameof(faceUserId));
+
+            using (var connection = new SqlConnection(Settings.SQL_CONN_STRING))
+            {
+                await connection.OpenAsync();
+                return await connection.QuerySingleOrDefaultAsync<UserMap>(
+                    "SELECT * FROM [dbo].[UsersMap] WHERE SlackUid = @FaceUserId",
+                    new { FaceUserId = faceUserId });
+            }
+        }
+
+        private static SlackMessage getMessage(string faceId, string nameOfTagged, List<string> votedUsers) => new SlackMessage
         {
             Attachments = new List<SlackMessage.Attachment>
                 {
                     new SlackMessage.Attachment
                     {
-                        Title = "Success",
-                        Text = $"Image was successfully added to the model. Thanks to {String.Join(", ", votedUsers)}.",
+                        Title = $"Tagged as {nameOfTagged}",
+                        Text = $"Image was successfully added to the model. Thanks to {votedUsers.ToUsersList()}.",
                         ThumbnailUrl = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{faceId}.jpg",
                         Color = "#36a64f"
                     }

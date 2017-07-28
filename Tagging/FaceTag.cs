@@ -80,17 +80,7 @@ namespace Tagging
 
             // store users who voted till now + the user that voted now
             attachment.CallbackId = usersWhoTagged.ToJson();
-
-            switch (usersWhoTagged.Count)
-            {
-                case 1:
-                    attachment.Text = $"Person tagged by {usersWhoTagged.First()}";
-                    break;
-                default:
-                    attachment.Text = $"Person tagged by {String.Join(", ", usersWhoTagged.Take(usersWhoTagged.Count - 1))} and {usersWhoTagged.Last()}";
-                    break;
-            }
-            
+            attachment.Text = $"Person tagged by {usersWhoTagged.ToUsersList()}";
 
             return original;
         }
