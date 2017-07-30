@@ -30,7 +30,6 @@ namespace Tagging
                 var payload = getMessage(
                     slackInput.FaceId,
                     (await getName(slackInput.FaceUserId))?.FirstName,
-                    slackInput.OriginalMessage.Attachments[2].CallbackId.FromJson<List<string>>())
                     .ToJson(camelCasingMembers: true);
                 request.Content = new StringContent(payload, Encoding.UTF8, "application/json");
                 var response = await _client.SendAsync(request);
@@ -51,14 +50,14 @@ namespace Tagging
             }
         }
 
-        private static SlackMessage getMessage(string faceId, string nameOfTagged, List<string> votedUsers) => new SlackMessage
+        private static SlackMessage getMessage(string faceId, string nameOfTagged) => new SlackMessage
         {
             Attachments = new List<SlackMessage.Attachment>
                 {
                     new SlackMessage.Attachment
                     {
                         Title = $"Tagged as {nameOfTagged}",
-                        Text = $"Image was successfully added to the model. Thanks to {votedUsers.ToUsersList()}.",
+                        Text = $"Image was successfully added to the model.",
                         ThumbnailUrl = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{faceId}.jpg",
                         Color = "#36a64f"
                     }
