@@ -29,7 +29,7 @@ namespace Tagging
             {
                 var payload = getMessage(
                     slackInput.FaceId,
-                    (await getName(slackInput.FaceUserId))?.FirstName,
+                    (await getName(slackInput.FaceUserId))?.FirstName)
                     .ToJson(camelCasingMembers: true);
                 request.Content = new StringContent(payload, Encoding.UTF8, "application/json");
                 var response = await _client.SendAsync(request);
