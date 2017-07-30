@@ -36,6 +36,7 @@ namespace Tagging
             // * Not enough votes => wait for more
             // * Too many votes - edge case, only if two users voted simultaniously 
             var votesForSamePerson = await getFaceTagsOnImageCount(slackInput.FaceUserId, slackInput.FaceId);
+            log.Info($"Votes for same person was {votesForSamePerson} while required is {REQUIRED_VOTES_FROM_DIFF_USERS}");
             if (votesForSamePerson < REQUIRED_VOTES_FROM_DIFF_USERS)
             {
                 log.Info($"Not enough votes for face on image. Requires at least {REQUIRED_VOTES_FROM_DIFF_USERS} different user votes to vote for the same user.");
