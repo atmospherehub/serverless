@@ -4,26 +4,26 @@ This flows triggered by image that uploaded from atmosphere client device and ta
 
 ```
                                                              ++[queue] atmosphere+processed+images
-  ++[HTTP]                                                   |
+  +[HTTP]                                                    |
   |                                                          |
   |                                                          |
   |    +--------------------+        +--------------------+   +    +--------------------+
   +?+-->    ImageUpload     +-------->    SendToEmotion   +--+?+--->    CleanupBlob     |
        +--------------------+        +--------------------+        +---------+----------+
-                                                                            +
-                                                                            ?+--+[topic] atmosphere+images+with+faces
-                                                                            +
-                                                             +--------------+--------------+
-                                                             |                             |
-                                                   +---------v----------+        +---------v----------+
-                                                   |      StoreSql      |        |     StoreTable     |
-                                                   +---------+----------+        +--------------------+
-                                                             +                             
-                                                             ?+--+[topic] atmosphere+images+in+db
-                                                             +
-                                              +--------------+--------------+
-                                              |                             |
-                                    +---------v----------+        +---------v----------+
-                                    |  CreateRectangles  |        |    CreateZoomIn    |
-                                    +--------------------+        +--------------------+
+                                                                             +
+                                     atmosphere+images+with+faces [topic]+--+?
+                                                                             +
+                                                              +--------------+--------------+
+                                                              |                             |
+                                                    +---------v----------+        +---------v----------+
+                                                    |      StoreSql      |        |     StoreTable     |
+                                                    +---------+----------+        +--------------------+
+                                                              +                             
+                                                              ?+--+[topic] atmosphere+images+in+db
+                                                              +
+                                               +--------------+--------------+
+                                               |                             |
+                                     +---------v----------+        +---------v----------+
+                                     |  CreateRectangles  |        |    CreateZoomIn    |
+                                     +--------------------+        +--------------------+
 ```
