@@ -1,4 +1,4 @@
-﻿## Reports flow
+## Reports flow
 
 The flow is schedule based and generates reports.
 
