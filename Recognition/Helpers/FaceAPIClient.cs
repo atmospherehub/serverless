@@ -15,7 +15,7 @@ namespace Recognition
             where T : class
         {
             var payload = ((object)(requestObject ?? new { })).ToJson();
-            log.Info($"Calling API at path [/persons{apiPath}] with payload {payload}");
+            log.Info($"Calling API at path [{apiPath}] with payload {payload}");
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"{Settings.FACE_API_URL}{apiPath}"))
             {

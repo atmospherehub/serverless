@@ -74,7 +74,7 @@ namespace Recognition
                 // image submitted only once to congetive when a required number of votes reached
                 // once submitted we need to prevent any more voting on slack image
                 await FaceAPIClient.Call<dynamic>(
-                    $"/persongroups/{Settings.FACE_API_GROUP_NANE}/persons{user.CognitiveUid}/persistedFaces",
+                    $"/persongroups/{Settings.FACE_API_GROUP_NANE}/persons/{user.CognitiveUid}/persistedFaces",
                     new { url = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{slackInput.FaceId}.jpg" },
                     log);
                 trainingSentQueue.Add(message);
