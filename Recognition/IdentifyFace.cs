@@ -22,21 +22,14 @@ namespace Recognition
             log.Info($"Topic trigger '{nameof(IdentifyFace)}' with message: {message}");
 
             var face = message.FromJson<Face>();
-            var detectedFaces = await detectFace(face.Id, log);
 
-            if (detectedFaces == null || detectedFaces.Count == 0)
+            var cognitiveFaceId = await detectFace(face.Id, log); 
+            if(cognitiveFaceId == null)
             {
                 log.Info($"No face was detected in {face}");
                 return;
             }
-            else if (detectedFaces.Count > 1)
-            {
-                log.Info($"Multiple faces detected on rectangle");
-                // TODO: should take a face that occupies the most space
-                // meantime taking the first
-            }
 
-            var cognitiveFaceId = detectedFaces[0].FaceId;
             var cognitivePersonId = await identifyFace(cognitiveFaceId, log);
             if(cognitivePersonId == null)
             {
@@ -63,16 +56,19 @@ namespace Recognition
             }
         }
 
-        private static async Task<CognitiveDetectResponse> detectFace(Guid atmosphereFaceId, TraceWriter log)
+        private static async Task<string> detectFace(Guid atmosphereFaceId, TraceWriter log)
         {
             if (atmosphereFaceId == Guid.Empty) throw new ArgumentNullException(nameof(atmosphereFaceId));
 
             try
             {
-                return await FaceAPIClient.Call<CognitiveDetectResponse>(
+                var result = await FaceAPIClient.Call<CognitiveDetectResponse>(
                     $"/detect",
                     new { url = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{atmosphereFaceId.ToString("D")}.jpg" },
                     log);
+                return result
+                    .FirstOrDefault()
+                    ?.FaceId;
             }
             catch (InvalidOperationException ex)
             {
