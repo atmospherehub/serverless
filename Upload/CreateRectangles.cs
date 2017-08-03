@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using Upload.Models;
 
 namespace Upload
 {
@@ -16,12 +17,12 @@ namespace Upload
 
         [FunctionName(nameof(CreateRectangles))]
         public static void Run(
-            [ServiceBusTrigger("atmosphere-images-in-db", "store-rectangles", AccessRights.Listen, Connection = Settings.SB_CONN_NAME)]string message,
+            [ServiceBusTrigger("atmosphere-images-with-faces", "store-rectangles", AccessRights.Listen, Connection = Settings.SB_CONN_NAME)]string message,
             TraceWriter log)
         {
             log.Info($"Topic trigger '{nameof(CreateRectangles)}' with message: {message}");
 
-            var face = message.FromJson<Face>();
+            var face = message.FromJson<ProcessedFace>();
 
             using (var inputStream = BlobStorageClient.DownloadBlob(Settings.CONTAINER_FACES, face.ImageName))
             {
@@ -29,7 +30,7 @@ namespace Upload
 
                 using (var outputStream = cutRectangle(face.FaceRectangle, inputStream))
                 {
-                    var fileName = $"{face.Id.ToString("D")}.jpg";
+                    var fileName = $"{face.FaceId.ToString("D")}.jpg";
                     BlobStorageClient.UploadBlob(Settings.CONTAINER_RECTANGLES, fileName, outputStream);
                     log.Info($"Uploaded image {fileName} blob in size of {outputStream.Length}");
                 }

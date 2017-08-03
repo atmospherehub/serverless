@@ -1,21 +1,24 @@
 using Common;
+using Common.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
+using System;
+using System.Linq;
 using Upload.Models;
 
 namespace Upload
 {
-    public static class CleanupBlob
+    public static class FacesSplitter
     {
-        [FunctionName(nameof(CleanupBlob))]                    
+        [FunctionName(nameof(FacesSplitter))]
         public static void Run(
             [ServiceBusTrigger("atmosphere-processed-images", AccessRights.Listen, Connection = Settings.SB_CONN_NAME)]string message,
             [ServiceBus("atmosphere-images-with-faces", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Topic)] ICollector<string> outputTopic,
             TraceWriter log)
         {
-            log.Info($"Queue trigger '{nameof(CleanupBlob)}' with message: {message}");
+            log.Info($"Queue trigger '{nameof(FacesSplitter)}' with message: {message}");
 
             var processedImage = message.FromJson<ProcessedImage>();
 
@@ -27,10 +30,25 @@ namespace Upload
             else
             {
                 log.Info($"{processedImage.Rectangles.Length} faces detected => rasing notifications");
-                outputTopic.Add(message);
+
+                processedImage
+                    .Rectangles
+                    .Select(r => new ProcessedFace()
+                    {
+                        FaceId = Guid.NewGuid(),
+                        ImageName = processedImage.ImageName,
+                        Scores = r.Scores,
+                        FaceRectangle = new Face.Rectangle
+                        {
+                            Height = r.FaceRectangle.Height,
+                            Left = r.FaceRectangle.Left,
+                            Top = r.FaceRectangle.Top,
+                            Width = r.FaceRectangle.Width
+                        }
+                    })
+                    .ToList()
+                    .ForEach(f => outputTopic.Add(f.ToJson()));
             }
         }
-
-        
     }
 }

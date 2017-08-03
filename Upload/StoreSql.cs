@@ -1,14 +1,13 @@
 using Common;
+using Common.Models;
 using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.ServiceBus;
-using Microsoft.ProjectOxford.Common;
 using Microsoft.ServiceBus.Messaging;
 using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Threading.Tasks;
 using Upload.Models;
 
@@ -29,69 +28,44 @@ namespace Upload
         {
             log.Info($"Topic trigger '{nameof(StoreSql)}' with message: {message}");
 
-            var processedImage = message.FromJson<ProcessedImage>();
-            var now = DateTime.UtcNow;
-            var dbRecords = processedImage.Rectangles
-                .Select(i => new {
-                    Id = Guid.NewGuid(),
-                    Time = now,
-                    processedImage.ImageName,
-                    i.FaceRectangle,
-                    i.Scores.Anger,
-                    i.Scores.Contempt,
-                    i.Scores.Disgust,
-                    i.Scores.Fear,
-                    i.Scores.Happiness,
-                    i.Scores.Neutral,
-                    i.Scores.Sadness,
-                    i.Scores.Surprise
-                })
-                .ToList();
+            var processedFace = message.FromJson<ProcessedFace>();
+            var dataModel = new
+            {
+                Id = processedFace.FaceId,
+                Time = DateTime.UtcNow,
+                processedFace.ImageName,
+                processedFace.FaceRectangle,
+                processedFace.Scores.Anger,
+                processedFace.Scores.Contempt,
+                processedFace.Scores.Disgust,
+                processedFace.Scores.Fear,
+                processedFace.Scores.Happiness,
+                processedFace.Scores.Neutral,
+                processedFace.Scores.Sadness,
+                processedFace.Scores.Surprise
+            };
 
             using (var connection = new SqlConnection(Settings.SQL_CONN_STRING))
             {
                 await connection.OpenAsync();
                 await connection.ExecuteAsync(
                     @"INSERT INTO [dbo].[Faces] (
-                        [Id],
-                        [Time], 
-                        [Image], 
-                        [Rectangle], 
-                        [CognitiveAnger], 
-                        [CognitiveContempt],
-                        [CognitiveDisgust],
-                        [CognitiveFear], 
-                        [CognitiveHappiness], 
-                        [CognitiveNeutral], 
-                        [CognitiveSadness], 
-                        [CognitiveSurprise]) VALUES (
-                        @Id,
-                        @Time,
-                        @ImageName,
-                        @FaceRectangle,
-                        @Anger,
-                        @Contempt,
-                        @Disgust,
-                        @Fear,
-                        @Happiness,
-                        @Neutral,
-                        @Sadness,
-                        @Surprise)",
-                    dbRecords);
+                        [Id], [Time], [Image], [Rectangle], [CognitiveAnger], [CognitiveContempt], [CognitiveDisgust], [CognitiveFear], [CognitiveHappiness], [CognitiveNeutral], [CognitiveSadness], [CognitiveSurprise]) 
+                      VALUES (
+                        @Id, @Time, @ImageName, @FaceRectangle, @Anger, @Contempt, @Disgust, @Fear, @Happiness, @Neutral, @Sadness, @Surprise)",
+                    dataModel);
             }
 
-            log.Info($"Stored {dbRecords.Count} rows");
-
-            foreach (var dbRecord in dbRecords)
-                outputTopic.Add(dbRecord.ToJson());
+            log.Info($"Stored records in DB");
+            outputTopic.Add(dataModel.ToJson());
         }
     }
 
-    public class RectangleHandler : SqlMapper.TypeHandler<Rectangle>
+    public class RectangleHandler : SqlMapper.TypeHandler<Face.Rectangle>
     {
-        public override Rectangle Parse(object value) => throw new NotImplementedException();
+        public override Face.Rectangle Parse(object value) => throw new NotImplementedException();
 
-        public override void SetValue(IDbDataParameter parameter, Rectangle value)
+        public override void SetValue(IDbDataParameter parameter, Face.Rectangle value)
         {
             parameter.Value = value.ToJson();
             parameter.DbType = DbType.String;
