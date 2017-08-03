@@ -29,7 +29,7 @@ namespace Tagging
             {
                 var payload = getMessage(
                     slackInput.FaceId,
-                    (await getName(slackInput.FaceUserId))?.FirstName)
+                    (await getName(slackInput.UserId))?.FirstName)
                     .ToJson(camelCasingMembers: true);
                 request.Content = new StringContent(payload, Encoding.UTF8, "application/json");
                 var response = await _client.SendAsync(request);
@@ -37,16 +37,16 @@ namespace Tagging
             }
         }
 
-        private static async Task<UserMap> getName(string faceUserId)
+        private static async Task<UserMap> getName(string userId)
         {
-            if (String.IsNullOrEmpty(faceUserId)) throw new ArgumentNullException(nameof(faceUserId));
+            if (String.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
 
             using (var connection = new SqlConnection(Settings.SQL_CONN_STRING))
             {
                 await connection.OpenAsync();
                 return await connection.QuerySingleOrDefaultAsync<UserMap>(
-                    "SELECT * FROM [dbo].[UsersMap] WHERE SlackUid = @FaceUserId",
-                    new { FaceUserId = faceUserId });
+                    "SELECT * FROM [dbo].[UsersMap] WHERE UserId = @UserId",
+                    new { UserId = userId });
             }
         }
 

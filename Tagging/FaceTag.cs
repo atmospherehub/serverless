@@ -30,14 +30,14 @@ namespace Tagging
             log.Info($"Received payload {rawPayload}");
 
             var slackMessage = rawPayload.FromJson<SlackActionResponse>();
-            var faceUserId = slackMessage.Actions?.FirstOrDefault()?.SelectedOptions?.FirstOrDefault()?.Value;
+            var userId = slackMessage.Actions?.FirstOrDefault()?.SelectedOptions?.FirstOrDefault()?.Value;
 
-            if (String.IsNullOrEmpty(faceUserId)) throw new InvalidOperationException("No user was selected");
+            if (String.IsNullOrEmpty(userId)) throw new InvalidOperationException("No user was selected");
 
             outputQueue.Add(new TaggingMessage
             {
                 FaceId = slackMessage.CallbackId,
-                FaceUserId = faceUserId,
+                UserId = userId,
                 TaggedByName = slackMessage.User.Name,
                 TaggedById = slackMessage.User.Id,
                 OriginalMessage = slackMessage.OriginalMessage,
@@ -50,14 +50,13 @@ namespace Tagging
                 Content = new StringContent(
                     createResponseMessage(
                         slackMessage.OriginalMessage,
-                        faceUserId,
                         slackMessage.User.Name).ToJson(camelCasingMembers: true),
                     System.Text.Encoding.UTF8,
                     "application/json")
             };
         }
 
-        private static SlackMessage createResponseMessage(SlackMessage original, string faceUserId, string taggedBy)
+        private static SlackMessage createResponseMessage(SlackMessage original, string taggedBy)
         {
             if (original.Attachments.Count == 2)
             {

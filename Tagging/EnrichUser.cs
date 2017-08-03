@@ -24,7 +24,7 @@ namespace Tagging
             log.Info($"Queue trigger '{nameof(EnrichUser)}' with message: {message}");
             var userMap = message.FromJson<UserMap>();
 
-            var userInfo = await _client.GetAsync<UserInfoResponse>(String.Format(API_ADDRESS_FORMAT, userMap.SlackUid));
+            var userInfo = await _client.GetAsync<UserInfoResponse>(String.Format(API_ADDRESS_FORMAT, userMap.UserId));
             log.Info($"Received from Slack API {userInfo.ToJson()}");
 
             if (!userInfo.Success)
@@ -35,13 +35,13 @@ namespace Tagging
                 await connection.OpenAsync();
                 await connection.ExecuteAsync(
                     @"UPDATE [dbo].[UsersMap] SET FirstName = @FirstName, LastName = @LastName, Email = @Email
-                      WHERE SlackUid = @SlackUid",
+                      WHERE UserId = @UserId",
                     new
                     {
                         FirstName = userInfo.User.profile.first_name,
                         LastName = userInfo.User.profile.last_name,
                         Email = userInfo.User.profile.email,
-                        SlackUid = userMap.SlackUid
+                        UserId = userMap.UserId
                     });
             }
         }

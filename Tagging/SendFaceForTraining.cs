@@ -35,7 +35,7 @@ namespace Tagging
             // * The required number of people taged face as same person => the image should be submitted to congetive service 
             // * Not enough votes => wait for more
             // * Too many votes - edge case, only if two users voted simultaniously 
-            var votesForSamePerson = await getFaceTagsOnImageCount(slackInput.FaceUserId, slackInput.FaceId);
+            var votesForSamePerson = await getFaceTagsOnImageCount(slackInput.UserId, slackInput.FaceId);
             log.Info($"Votes for same person was {votesForSamePerson} while required is {REQUIRED_VOTES_FROM_DIFF_USERS}");
             if (votesForSamePerson < REQUIRED_VOTES_FROM_DIFF_USERS)
             {
@@ -48,21 +48,21 @@ namespace Tagging
                 return;
             }
 
-            if (await getFaceTagsCount(slackInput.FaceUserId) > MAX_IMAGES_PER_PERSON)
+            if (await getFaceTagsCount(slackInput.UserId) > MAX_IMAGES_PER_PERSON)
             {
                 log.Info($"Reached limit of images per person. Maximum amount is {MAX_IMAGES_PER_PERSON}. This means no more training required for the person.");
                 return;
             }
 
             // ensure mapping of our identifier of user - SlackId has a mapping to user identifier on Cognetive service
-            var user = await getUsersMap(slackInput.FaceUserId);
+            var user = await getUsersMap(slackInput.UserId);
             if (user == null)
             {
                 log.Info($"Creating mapping for slackId and cognitiveId");
-                var faceApiMapping = await callFacesAPI<CreateUserResponse>(null, new { name = slackInput.FaceUserId }, log);
+                var faceApiMapping = await callFacesAPI<CreateUserResponse>(null, new { name = slackInput.UserId }, log);
                 user = new UserMap
                 {
-                    SlackUid = slackInput.FaceUserId,
+                    UserId = slackInput.UserId,
                     CognitiveUid = faceApiMapping.PersonId
                 };
                 await saveUsersMap(user);
@@ -111,16 +111,16 @@ namespace Tagging
             }
         }
 
-        private static async Task<UserMap> getUsersMap(string faceUserId)
+        private static async Task<UserMap> getUsersMap(string userId)
         {
-            if (String.IsNullOrEmpty(faceUserId)) throw new ArgumentNullException(nameof(faceUserId));
+            if (String.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
 
             using (var connection = new SqlConnection(Settings.SQL_CONN_STRING))
             {
                 await connection.OpenAsync();
                 return await connection.QuerySingleOrDefaultAsync<UserMap>(
-                    "SELECT * FROM [dbo].[UsersMap] WHERE SlackUid = @FaceUserId",
-                    new { FaceUserId = faceUserId });
+                    "SELECT * FROM [dbo].[UsersMap] WHERE UserId = @UserId",
+                    new { UserId = userId });
             }
         }
 
@@ -132,35 +132,35 @@ namespace Tagging
             {
                 await connection.OpenAsync();
                 await connection.ExecuteAsync(
-                    "INSERT INTO [dbo].[UsersMap] ([SlackUid], [CognitiveUid]) VALUES (@SlackUid, @CognitiveUid)",
+                    "INSERT INTO [dbo].[UsersMap] ([UserId], [CognitiveUid]) VALUES (@UserId, @CognitiveUid)",
                     userMap);
             }
         }
 
-        private static async Task<int> getFaceTagsOnImageCount(string faceUserId, string faceId)
+        private static async Task<int> getFaceTagsOnImageCount(string userId, string faceId)
         {
-            if (String.IsNullOrEmpty(faceUserId)) throw new ArgumentNullException(nameof(faceUserId));
+            if (String.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
             if (String.IsNullOrEmpty(faceId)) throw new ArgumentNullException(nameof(faceId));
 
             using (var connection = new SqlConnection(Settings.SQL_CONN_STRING))
             {
                 await connection.OpenAsync();
                 return await connection.ExecuteScalarAsync<int>(
-                    "SELECT COUNT(*) FROM [dbo].[FaceTags] WHERE FaceId = @FaceId AND FaceUserId = @FaceUserId",
-                    new { FaceUserId = faceUserId, FaceId = faceId });
+                    "SELECT COUNT(*) FROM [dbo].[FaceTags] WHERE FaceId = @FaceId AND UserId = @UserId",
+                    new { UserId = userId, FaceId = faceId });
             }
         }
 
-        private static async Task<int> getFaceTagsCount(string faceUserId)
+        private static async Task<int> getFaceTagsCount(string userId)
         {
-            if (String.IsNullOrEmpty(faceUserId)) throw new ArgumentNullException(nameof(faceUserId));
+            if (String.IsNullOrEmpty(userId)) throw new ArgumentNullException(nameof(userId));
 
             using (var connection = new SqlConnection(Settings.SQL_CONN_STRING))
             {
                 await connection.OpenAsync();
                 return await connection.ExecuteScalarAsync<int>(
-                    "SELECT COUNT(*) FROM [dbo].[FaceTags] WHERE FaceUserId = @FaceUserId",
-                    new { FaceUserId = faceUserId });
+                    "SELECT COUNT(*) FROM [dbo].[FaceTags] WHERE UserId = @UserId",
+                    new { UserId = userId });
             }
         }
     }
