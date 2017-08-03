@@ -28,22 +28,14 @@ namespace Recognition
             var face = message.FromJson<Face>();
 
             // check image size
-            SlackMessage requestPayload;
             using (var inputStream = BlobStorageClient.DownloadBlob(Settings.CONTAINER_RECTANGLES, $"{face.Id}.jpg"))
             using (var sourceImage = Image.FromStream(inputStream))
             {
                 log.Info($"The size of face thumbnail is {sourceImage.Size}");
                 if (sourceImage.Size.Width < MIN_WIDTH || sourceImage.Size.Height < MIN_HEIGHT)
-                    requestPayload = getMessageImageTooSmall(face.Id, sourceImage.Size);
+                    await SlackClient.SendMessage(getMessageImageTooSmall(face.Id, sourceImage.Size), log);
                 else
-                    requestPayload = getMessageForTagging(face.Id);
-            }
-
-            using (var request = new HttpRequestMessage(HttpMethod.Post, Settings.SLACK_WEBHOOK_URL))
-            {
-                request.Content = new StringContent(requestPayload.ToJson(camelCasingMembers: true), Encoding.UTF8, "application/json");
-                var response = await _client.SendAsync(request);
-                log.Info($"Sent to Slack {requestPayload} and received from service {response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+                    await SlackClient.SendMessage(getMessageForTagging(face.Id), log);
             }
         }
 

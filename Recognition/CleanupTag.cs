@@ -1,22 +1,18 @@
 using Common;
+using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.ServiceBus.Messaging;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using Recognition.Models;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
-using Dapper;
+using System.Threading.Tasks;
 
 namespace Recognition
 {
     public static class CleanupTag
     {
-        private static readonly HttpClient _client = new HttpClient();
-
         [FunctionName(nameof(CleanupTag))]
         public static async Task Run(
             [ServiceBusTrigger("atmosphere-face-cleanup", AccessRights.Listen, Connection = Settings.SB_CONN_NAME)]string message,
@@ -28,13 +24,7 @@ namespace Recognition
             var rowsDeleted = await cleanupDb(slackInput.FaceId);
             log.Info($"{rowsDeleted} rows cleaned up from DB for faceId {slackInput.FaceId}");
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, slackInput.ResponseUrl))
-            {
-                var payload = getMessage(slackInput.FaceId).ToJson(camelCasingMembers: true);
-                request.Content = new StringContent(payload, Encoding.UTF8, "application/json");
-                var response = await _client.SendAsync(request);
-                log.Info($"Sent to Slack {payload} and received from service {response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
-            }
+            await SlackClient.SendMessage(getMessage(slackInput.FaceId), log, slackInput.ResponseUrl);
         }
 
         private static async Task<int> cleanupDb(string faceId)
