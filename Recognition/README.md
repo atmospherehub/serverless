@@ -3,14 +3,17 @@
 The flow responseble for sending faces into slack channel to allow users to tag. Once the person is tagged the image then sent to cloud provider for model training.
 
 ```
-                                 +-+[topic] atmosphere-images-in-db
-                                 |
-                 +---------------+----------------+
-                 |                                |
-      +----------v------------+       +-----------v-----------+
-      | RequestTaggingOnSlack |       |     IdentifyFace      |
-      +-----------------------+       +-----------------------+
-
+           atmosphere-face-not-identified [queue]+-+
+                                                   |      +-----------v-----------+
++[topic] atmosphere-images-in-db                +--?------> RequestTaggingOnSlack |
+|                                               |         +-----------------------+
+|   +-----------------------+                   |
++--->      IdentifyFace     +-------------------+
+    +-----------------------+                   |
+                                                |         +-----------------------+
+                                                +---?----->   FinalizeIdentified  |
+                                                    |     +-----------------------+
+                atmosphere-face-identified [queue]+-+
 
 
                                                                    ++[queue] atmosphere+face+tagged

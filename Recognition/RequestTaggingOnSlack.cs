@@ -3,13 +3,11 @@ using Common.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.ServiceBus.Messaging;
+using Recognition.Models;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using Recognition.Models;
 
 namespace Recognition
 {
@@ -17,11 +15,10 @@ namespace Recognition
     {
         private const int MIN_WIDTH = 50;
         private const int MIN_HEIGHT = 50;
-        private static readonly HttpClient _client = new HttpClient();
 
         [FunctionName(nameof(RequestTaggingOnSlack))]
         public static async Task Run(
-            [ServiceBusTrigger("atmosphere-images-in-db", "tag-slack-sender", AccessRights.Listen, Connection = Settings.SB_CONN_NAME)]string message,
+            [ServiceBusTrigger("atmosphere-face-not-identified", AccessRights.Listen, Connection = Settings.SB_CONN_NAME)]string message,
             TraceWriter log)
         {
             log.Info($"Topic trigger '{nameof(RequestTaggingOnSlack)}' with message: {message}");

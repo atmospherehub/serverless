@@ -3,6 +3,7 @@ using Common.Models;
 using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Azure.WebJobs.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 using Recognition.Models;
 using System;
@@ -17,6 +18,8 @@ namespace Recognition
         [FunctionName(nameof(IdentifyFace))]
         public static async Task Run(
             [ServiceBusTrigger("atmosphere-images-in-db", "identify-face", AccessRights.Listen, Connection = Settings.SB_CONN_NAME)]string message,
+            [ServiceBus("atmosphere-face-not-identified", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> notIdentifiedQueue,
+            [ServiceBus("atmosphere-face-identified", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> identifiedQueue,
             TraceWriter log)
         {
             log.Info($"Topic trigger '{nameof(IdentifyFace)}' with message: {message}");
@@ -34,12 +37,12 @@ namespace Recognition
             if(cognitivePersonId == null)
             {
                 log.Info($"Didn't indetify person in {face}");
-                // TODO: send here for tagging on slack
+                notIdentifiedQueue.Add(message);
             }
             else
             {
                 await storeFaceUserMapping(face.Id, cognitivePersonId);
-                // TODO: send to slack: user identified
+                identifiedQueue.Add(message);
             }
         }
         private static async Task storeFaceUserMapping(Guid atmosphereFaceId, string cognitivePersonId)
