@@ -1,6 +1,7 @@
-## Tagging flow
+## Recognition flow
 
-The flow responseble for sending faces into slack channel to allow users to tag. Once the person is tagged the image then sent to cloud provider for model training.
+The flow responseble for recognizing faces. If the face is not recognized it will be sent into slack channel to allow users to tag. 
+Once the person is tagged the image then sent to cloud provider for model training.
 
 ```
            atmosphere-face-not-identified [queue]+-+
