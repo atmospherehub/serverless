@@ -4,12 +4,10 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
+using Recognition.Models;
 using System;
 using System.Data.SqlClient;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using Recognition.Models;
 
 namespace Recognition
 {
@@ -17,8 +15,6 @@ namespace Recognition
     {
         private static readonly int REQUIRED_VOTES_FROM_DIFF_USERS = Int32.Parse(Settings.Get("REQUIRED_VOTES_FOR_SENDING_TO_FACE_API") ?? "2");
         private const int MAX_IMAGES_PER_PERSON = 248;
-
-        private static readonly HttpClient _client = new HttpClient();
 
         [FunctionName(nameof(SendFaceForTraining))]
         public static async Task Run(
@@ -59,7 +55,10 @@ namespace Recognition
             if (user == null)
             {
                 log.Info($"Creating mapping for slackId and cognitiveId");
-                var faceApiMapping = await callFacesAPI<CreateUserResponse>(null, new { name = slackInput.UserId }, log);
+                var faceApiMapping = await FaceAPIClient.Call<CreateUserResponse>(
+                    $"/persongroups/{Settings.FACE_API_GROUP_NANE}/persons", 
+                    new { name = slackInput.UserId }, 
+                    log);
                 user = new UserMap
                 {
                     UserId = slackInput.UserId,
@@ -74,8 +73,8 @@ namespace Recognition
             {
                 // image submitted only once to congetive when a required number of votes reached
                 // once submitted we need to prevent any more voting on slack image
-                await callFacesAPI<dynamic>(
-                    $"/{user.CognitiveUid}/persistedFaces",
+                await FaceAPIClient.Call<dynamic>(
+                    $"/persongroups/{Settings.FACE_API_GROUP_NANE}/persons{user.CognitiveUid}/persistedFaces",
                     new { url = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{slackInput.FaceId}.jpg" },
                     log);
                 trainingSentQueue.Add(message);
@@ -86,28 +85,6 @@ namespace Recognition
                 // and remove all taggin info perfored till now
                 log.Info($"Going to cleanup tagging for this faceId");
                 cleanupQueue.Add(message);
-            }
-        }
-
-        private static async Task<T> callFacesAPI<T>(string apiPath, dynamic requestObject, TraceWriter log)
-            where T : class
-        {
-            var payload = ((object)(requestObject ?? new { })).ToJson();
-            log.Info($"Calling API at path [/persons{apiPath}] with payload {payload}");
-
-            using (var request = new HttpRequestMessage(HttpMethod.Post, $"{Settings.FACE_API_URL}/persons{apiPath}"))
-            {
-                request.Headers.Add("Ocp-Apim-Subscription-Key", Settings.FACE_API_TOKEN);
-                request.Content = new StringContent(payload, Encoding.UTF8, "application/json");
-
-                var response = await _client.SendAsync(request);
-                var contents = await response.Content.ReadAsStringAsync();
-
-                if (!response.IsSuccessStatusCode)
-                    throw new InvalidOperationException($"Received result from faces API {response.StatusCode}: {contents}");
-
-                log.Info($"Received result from faces API {response.StatusCode}: {contents}");
-                return contents.FromJson<T>();
             }
         }
 

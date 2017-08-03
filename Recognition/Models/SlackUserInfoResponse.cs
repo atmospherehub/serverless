@@ -2,7 +2,7 @@
 
 namespace Recognition.Models
 {
-    public class UserInfoResponse
+    public class SlackUserInfoResponse
     {
         [JsonProperty("ok")]
         public bool Success { get; set; }
