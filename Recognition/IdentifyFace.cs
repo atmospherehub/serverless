@@ -24,28 +24,28 @@ namespace Recognition
             var face = message.FromJson<Face>();
             var detectedFaces = await detectFace(face.Id, log);
 
-            if (detectedFaces.Length == 0)
+            if (detectedFaces == null || detectedFaces.Count == 0)
             {
                 log.Info($"No face was detected in {face}");
                 return;
             }
-            else if (detectedFaces.Length > 1)
+            else if (detectedFaces.Count > 1)
             {
                 log.Info($"Multiple faces detected on rectangle");
                 // TODO: should take a face that occupies the most space
                 // meantime taking the first
             }
 
-            var cognitiveFaceId = detectedFaces[0].faceId as string;
+            var cognitiveFaceId = detectedFaces[0].FaceId;
             var cognitivePersonId = await identifyFace(cognitiveFaceId, log);
-            if(cognitiveFaceId == null)
+            if(cognitivePersonId == null)
             {
                 log.Info($"Didn't indetify person in {face}");
                 // TODO: send here for tagging on slack
             }
             else
             {
-                await storeFaceUserMapping(face.Id, cognitiveFaceId);
+                await storeFaceUserMapping(face.Id, cognitivePersonId);
                 // TODO: send to slack: user identified
             }
         }
@@ -63,13 +63,13 @@ namespace Recognition
             }
         }
 
-        private static async Task<dynamic[]> detectFace(Guid atmosphereFaceId, TraceWriter log)
+        private static async Task<CognitiveDetectResponse> detectFace(Guid atmosphereFaceId, TraceWriter log)
         {
             if (atmosphereFaceId == Guid.Empty) throw new ArgumentNullException(nameof(atmosphereFaceId));
 
             try
             {
-                return await FaceAPIClient.Call<dynamic[]>(
+                return await FaceAPIClient.Call<CognitiveDetectResponse>(
                     $"/detect",
                     new { url = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{atmosphereFaceId.ToString("D")}.jpg" },
                     log);
