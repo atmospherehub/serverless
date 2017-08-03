@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Tagging
+namespace Recognition
 {
     public static class StringExtensions
     {

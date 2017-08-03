@@ -1,4 +1,4 @@
-﻿namespace Tagging.Models
+﻿namespace Recognition.Models
 {
     public class TaggingMessage
     {

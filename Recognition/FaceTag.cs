@@ -10,9 +10,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Tagging.Models;
+using Recognition.Models;
 
-namespace Tagging
+namespace Recognition
 {
     public static class FaceTag
     {

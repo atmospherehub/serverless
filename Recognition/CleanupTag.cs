@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Tagging.Models;
+using Recognition.Models;
 using System;
 using System.Data.SqlClient;
 using Dapper;
 
-namespace Tagging
+namespace Recognition
 {
     public static class CleanupTag
     {

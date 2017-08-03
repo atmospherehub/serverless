@@ -7,9 +7,9 @@ using Microsoft.ServiceBus.Messaging;
 using System;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
-using Tagging.Models;
+using Recognition.Models;
 
-namespace Tagging
+namespace Recognition
 {
     public static class StoreFaceTagSql
     {

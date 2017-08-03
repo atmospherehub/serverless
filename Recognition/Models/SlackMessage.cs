@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Tagging.Models
+namespace Recognition.Models
 {
     public class SlackMessage
     {

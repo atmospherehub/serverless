@@ -7,7 +7,7 @@ using Common;
 using Dapper;
 using System.Net.Http;
 
-namespace Tagging
+namespace Recognition
 {
     public static class StartTraining
     {
