@@ -24,7 +24,7 @@ namespace Recognition
             log.Info($"Queue trigger '{nameof(EnrichUser)}' with message: {message}");
             var userMap = message.FromJson<UserMap>();
 
-            var userInfo = await _client.GetAsync<UserInfoResponse>(String.Format(API_ADDRESS_FORMAT, userMap.UserId));
+            var userInfo = await _client.GetAsync<SlackUserInfoResponse>(String.Format(API_ADDRESS_FORMAT, userMap.UserId));
             log.Info($"Received from Slack API {userInfo.ToJson()}");
 
             if (!userInfo.Success)
