@@ -19,7 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{924F93B4-E
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tagging", "Tagging\Tagging.csproj", "{407EDFB2-6A54-4D1C-93BB-69E2B80919DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Recognition", "Recognition\Recognition.csproj", "{407EDFB2-6A54-4D1C-93BB-69E2B80919DD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
