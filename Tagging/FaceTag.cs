@@ -39,7 +39,7 @@ namespace Tagging
                 FaceId = slackMessage.CallbackId,
                 UserId = userId,
                 TaggedByName = slackMessage.User.Name,
-                TaggedById = slackMessage.User.Id,
+                TaggedByUserId = slackMessage.User.Id,
                 OriginalMessage = slackMessage.OriginalMessage,
                 ResponseUrl = slackMessage.ResponseUrl,
                 MessageTs = slackMessage.MessageTs

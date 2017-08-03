@@ -27,16 +27,16 @@ namespace Tagging
                 await connection.OpenAsync();
                 await connection.ExecuteAsync(
                     @"UPDATE [dbo].[FaceTags] SET UserId = @UserId, Time = @Time 
-                      WHERE FaceId = @FaceId AND TaggedById = @TaggedById
+                      WHERE FaceId = @FaceId AND TaggedByUserId = @TaggedByUserId
                       IF @@ROWCOUNT = 0
-                        INSERT INTO [dbo].[FaceTags] ([FaceId], [UserId],  [TaggedById], [TaggedByName],[Time]) 
-                        VALUES (@FaceId, @UserId, @TaggedById, @TaggedByName, @Time)",
+                        INSERT INTO [dbo].[FaceTags] ([FaceId], [UserId],  [TaggedByUserId], [TaggedByName],[Time]) 
+                        VALUES (@FaceId, @UserId, @TaggedByUserId, @TaggedByName, @Time)",
                     new
                     {
                         UserId = tagging.UserId,
                         Time = DateTimeOffset.UtcNow,
                         FaceId = tagging.FaceId,
-                        TaggedById = tagging.TaggedById,
+                        TaggedByUserId = tagging.TaggedByUserId,
                         TaggedByName = tagging.TaggedByName
                     });
             }
