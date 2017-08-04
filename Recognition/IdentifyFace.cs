@@ -33,16 +33,16 @@ namespace Recognition
                 return;
             }
 
-            var cognitivePersonId = await identifyFace(cognitiveFaceId, log);
-            if(cognitivePersonId == null)
+            var candidate = await identifyFace(cognitiveFaceId, log);
+            if(candidate == null)
             {
                 log.Info($"Didn't indetify person in {face}");
                 notIdentifiedQueue.Add(message);
             }
             else
             {
-                await storeFaceUserMapping(face.Id, cognitivePersonId);
-                identifiedQueue.Add(message);
+                await storeFaceUserMapping(face.Id, candidate.PersonId);
+                identifiedQueue.Add(Tuple.Create(candidate, face).ToJson());
             }
         }
         private static async Task storeFaceUserMapping(Guid atmosphereFaceId, string cognitivePersonId)
@@ -80,7 +80,7 @@ namespace Recognition
             }
         }
 
-        private static async Task<string> identifyFace(string cognitiveFaceId, TraceWriter log)
+        private static async Task<CognitiveIdentifyResponse.Candidate> identifyFace(string cognitiveFaceId, TraceWriter log)
         {
             if (String.IsNullOrEmpty(cognitiveFaceId)) throw new ArgumentNullException(nameof(cognitiveFaceId));
 
@@ -93,15 +93,14 @@ namespace Recognition
                         personGroupId = Settings.FACE_API_GROUP_NANE,
                         faceIds = new string[] { cognitiveFaceId },
                         maxNumOfCandidatesReturned = 3,
-                        confidenceThreshold = 0.5
+                        confidenceThreshold = 0.7
                     },
                     log);
 
                 return result
                     .FirstOrDefault()
                     ?.Candidates
-                    .FirstOrDefault()
-                    ?.PersonId;
+                    .FirstOrDefault();
             }
             catch (InvalidOperationException ex)
             {
