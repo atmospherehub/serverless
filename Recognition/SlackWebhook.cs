@@ -19,7 +19,7 @@ namespace Recognition
         [FunctionName(nameof(FaceTag))]
         public static async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post")]HttpRequestMessage request,
-            [ServiceBus("atmosphere-face-tagging", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> outputQueue,
+            [ServiceBus("atmosphere-face-tagging", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> taggingQueue,
             TraceWriter log)
         {
             log.Info($"Triggered '{nameof(FaceTag)}'");
@@ -28,35 +28,50 @@ namespace Recognition
             var rawPayload = nameValue["payload"];
 
             log.Info($"Received payload {rawPayload}");
+            var requestMessage = rawPayload.FromJson<SlackActionResponse>();
+            SlackMessage responseMessage = null;
 
-            var slackMessage = rawPayload.FromJson<SlackActionResponse>();
-            var userId = slackMessage.Actions?.FirstOrDefault()?.SelectedOptions?.FirstOrDefault()?.Value;
-
-            if (String.IsNullOrEmpty(userId)) throw new InvalidOperationException("No user was selected");
-
-            outputQueue.Add(new TaggingMessage
+            switch (requestMessage.Actions.FirstOrDefault())
             {
-                FaceId = slackMessage.CallbackId,
-                UserId = userId,
-                TaggedByName = slackMessage.User.Name,
-                TaggedByUserId = slackMessage.User.Id,
-                OriginalMessage = slackMessage.OriginalMessage,
-                ResponseUrl = slackMessage.ResponseUrl,
-                MessageTs = slackMessage.MessageTs
-            }.ToJson());
+                case SlackActionResponse.SlackAction a when a.Name == "tagged_person" && a.SelectedOptions?.FirstOrDefault()?.Value != null:
+                    log.Info($"Received action for tagging person");
+                    responseMessage = handleTaggedPerson(
+                        taggingQueue, 
+                        requestMessage, 
+                        a.SelectedOptions.First().Value);
+                    break;
+                default:
+                    throw new InvalidOperationException("Unknown action or missing params"); 
+            }
 
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(
-                    createResponseMessage(
-                        slackMessage.OriginalMessage,
-                        slackMessage.User.Name).ToJson(camelCasingMembers: true),
+                    responseMessage.ToJson(camelCasingMembers: true),
                     System.Text.Encoding.UTF8,
                     "application/json")
             };
         }
 
-        private static SlackMessage createResponseMessage(SlackMessage original, string taggedBy)
+        private static SlackMessage handleTaggedPerson(ICollector<string> taggingQueue, SlackActionResponse requestMessage, string UserId)
+        {
+            taggingQueue.Add(new TaggingMessage
+            {
+                FaceId = requestMessage.CallbackId,
+                UserId = UserId,
+                TaggedByName = requestMessage.User.Name,
+                TaggedByUserId = requestMessage.User.Id,
+                OriginalMessage = requestMessage.OriginalMessage,
+                ResponseUrl = requestMessage.ResponseUrl,
+                MessageTs = requestMessage.MessageTs
+            }.ToJson());
+
+            return createTaggedPersonMessage(
+                requestMessage.OriginalMessage,
+                requestMessage.User.Name);
+        }
+
+        private static SlackMessage createTaggedPersonMessage(SlackMessage original, string taggedBy)
         {
             if (original.Attachments.Count == 2)
             {

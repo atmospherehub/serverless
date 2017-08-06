@@ -28,6 +28,8 @@ namespace Recognition.Models
 
         public class SlackAction
         {
+            public string Name { get; set; }
+            
             [JsonProperty("selected_options")]
             public SlackSelectedOption[] SelectedOptions { get; set; }
         }
