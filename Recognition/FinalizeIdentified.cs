@@ -51,9 +51,21 @@ namespace Recognition
                     new SlackMessage.Attachment
                     {
                         Title = $"Identified as {nameOfTagged}",
-                        Text = $"The person on the image was successfully recognized with confidence {confidence.ToString("P")}.",
+                        Text = $"Successfully recognized with confidence {confidence.ToString("P")}.",
                         ThumbnailUrl = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{faceId}.jpg",
-                        Color = "#36a64f"
+                        Color = "#36a64f",
+                        CallbackId = faceId,
+                        Actions = new SlackMessage.SlackAction[]
+                        {
+                            new SlackMessage.SlackAction
+                            {
+                                Name = "wrong_identification",
+                                Type = "button",
+                                Text = $"Not {nameOfTagged}?",
+                                Style = "danger",
+                                Value = nameOfTagged
+                            }
+                        }
                     }
                 }
         };

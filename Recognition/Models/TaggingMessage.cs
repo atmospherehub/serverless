@@ -18,9 +18,5 @@
         public string TaggedByName { get; set; }
 
         public string ResponseUrl { get; set; }
-
-        public SlackMessage OriginalMessage { get; set; }
-
-        public string MessageTs { get; set; }
     }
 }

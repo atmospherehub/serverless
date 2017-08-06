@@ -14,15 +14,16 @@ using Recognition.Models;
 
 namespace Recognition
 {
-    public static class FaceTag
+    public static class SlackWebhook
     {
-        [FunctionName(nameof(FaceTag))]
+        [FunctionName(nameof(SlackWebhook))]
         public static async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post")]HttpRequestMessage request,
             [ServiceBus("atmosphere-face-tagging", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> taggingQueue,
+            [ServiceBus("atmosphere-face-undo-identify", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> undoIdentifyQueue,
             TraceWriter log)
         {
-            log.Info($"Triggered '{nameof(FaceTag)}'");
+            log.Info($"Triggered '{nameof(SlackWebhook)}'");
 
             var nameValue = await request.Content.ReadAsFormDataAsync();
             var rawPayload = nameValue["payload"];
@@ -40,6 +41,13 @@ namespace Recognition
                         requestMessage, 
                         a.SelectedOptions.First().Value);
                     break;
+                case SlackActionResponse.SlackAction a when a.Name == "wrong_identification":
+                    log.Info($"Received action for wrong person identified");
+                    responseMessage = handleWrongIdentifyPerson(
+                        undoIdentifyQueue,
+                        a.Value,
+                        requestMessage);
+                    break;
                 default:
                     throw new InvalidOperationException("Unknown action or missing params"); 
             }
@@ -53,6 +61,21 @@ namespace Recognition
             };
         }
 
+        private static SlackMessage handleWrongIdentifyPerson(ICollector<string> undoIdentifyQueue, string previouslyMarked, SlackActionResponse requestMessage)
+        {
+            undoIdentifyQueue.Add(new UndoIdentifyMessage
+            {
+                FaceId = requestMessage.CallbackId,
+                RequestedByName = requestMessage.User.Name,
+                ResponseUrl = requestMessage.ResponseUrl,
+            }.ToJson());
+
+            return createTaggingPersonMessage(
+                requestMessage.CallbackId,
+                requestMessage.User.Name,
+                previouslyMarked);
+        }
+
         private static SlackMessage handleTaggedPerson(ICollector<string> taggingQueue, SlackActionResponse requestMessage, string UserId)
         {
             taggingQueue.Add(new TaggingMessage
@@ -61,9 +84,7 @@ namespace Recognition
                 UserId = UserId,
                 TaggedByName = requestMessage.User.Name,
                 TaggedByUserId = requestMessage.User.Id,
-                OriginalMessage = requestMessage.OriginalMessage,
                 ResponseUrl = requestMessage.ResponseUrl,
-                MessageTs = requestMessage.MessageTs
             }.ToJson());
 
             return createTaggedPersonMessage(
@@ -98,5 +119,34 @@ namespace Recognition
 
             return original;
         }
+
+        private static SlackMessage createTaggingPersonMessage(string faceId, string requestedBy, string previouslyMarked) => new SlackMessage
+        {
+            Attachments = new List<SlackMessage.Attachment>
+                {
+                    new SlackMessage.Attachment
+                    {
+                        Title = "Wrong identification",
+                        Text = $"{requestedBy} thinks that the person on the image is not {previouslyMarked}. Avoid tagging if the face on thumb is not clear, blured or too small.",
+                        ThumbnailUrl = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{faceId}.jpg",
+                        Color = "#3aa3e3"
+                    },
+                    new SlackMessage.Attachment
+                    {
+                        Text = String.Empty,
+                        ImageUrl = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_ZOOMIN}/{faceId}.jpg",
+                        CallbackId = faceId.ToString(),
+                        Actions = new[]
+                        {
+                            new SlackMessage.SlackAction {
+                                Name = "tagged_person",
+                                Type = "select",
+                                DataSource = "users"
+                            }
+                        },
+                        Color = "#3aa3e3"
+                    }
+                }
+        };
     }
 }

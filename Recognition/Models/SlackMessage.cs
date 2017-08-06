@@ -53,6 +53,10 @@ namespace Recognition.Models
 
             [JsonProperty("data_source")]
             public string DataSource { get; set; }
+
+            public string Style { get; set; }
+
+            public string Value { get; set; }
         }
     }
 }
