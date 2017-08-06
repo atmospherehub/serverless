@@ -3,20 +3,16 @@ using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.ServiceBus.Messaging;
+using Recognition.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using Recognition.Models;
 
 namespace Recognition
 {
     public static class FinalizeTag
     {
-        private static readonly HttpClient _client = new HttpClient();
-
         [FunctionName(nameof(FinalizeTag))]
         public static async Task Run(
             [ServiceBusTrigger("atmosphere-face-training-sent", AccessRights.Listen, Connection = Settings.SB_CONN_NAME)]string message,

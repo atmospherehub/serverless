@@ -3,6 +3,7 @@ using Common.Models;
 using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Azure.WebJobs.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 using Recognition.Models;
 using System;
@@ -17,36 +18,31 @@ namespace Recognition
         [FunctionName(nameof(IdentifyFace))]
         public static async Task Run(
             [ServiceBusTrigger("atmosphere-images-in-db", "identify-face", AccessRights.Listen, Connection = Settings.SB_CONN_NAME)]string message,
+            [ServiceBus("atmosphere-face-not-identified", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> notIdentifiedQueue,
+            [ServiceBus("atmosphere-face-identified", AccessRights.Send, Connection = Settings.SB_CONN_NAME, EntityType = EntityType.Queue)] ICollector<string> identifiedQueue,
             TraceWriter log)
         {
             log.Info($"Topic trigger '{nameof(IdentifyFace)}' with message: {message}");
 
             var face = message.FromJson<Face>();
-            var detectedFaces = await detectFace(face.Id, log);
 
-            if (detectedFaces == null || detectedFaces.Count == 0)
+            var cognitiveFaceId = await detectFace(face.Id, log); 
+            if(cognitiveFaceId == null)
             {
                 log.Info($"No face was detected in {face}");
                 return;
             }
-            else if (detectedFaces.Count > 1)
-            {
-                log.Info($"Multiple faces detected on rectangle");
-                // TODO: should take a face that occupies the most space
-                // meantime taking the first
-            }
 
-            var cognitiveFaceId = detectedFaces[0].FaceId;
-            var cognitivePersonId = await identifyFace(cognitiveFaceId, log);
-            if(cognitivePersonId == null)
+            var candidate = await identifyFace(cognitiveFaceId, log);
+            if(candidate == null)
             {
                 log.Info($"Didn't indetify person in {face}");
-                // TODO: send here for tagging on slack
+                notIdentifiedQueue.Add(message);
             }
             else
             {
-                await storeFaceUserMapping(face.Id, cognitivePersonId);
-                // TODO: send to slack: user identified
+                await storeFaceUserMapping(face.Id, candidate.PersonId);
+                identifiedQueue.Add(Tuple.Create(candidate, face).ToJson());
             }
         }
         private static async Task storeFaceUserMapping(Guid atmosphereFaceId, string cognitivePersonId)
@@ -63,16 +59,19 @@ namespace Recognition
             }
         }
 
-        private static async Task<CognitiveDetectResponse> detectFace(Guid atmosphereFaceId, TraceWriter log)
+        private static async Task<string> detectFace(Guid atmosphereFaceId, TraceWriter log)
         {
             if (atmosphereFaceId == Guid.Empty) throw new ArgumentNullException(nameof(atmosphereFaceId));
 
             try
             {
-                return await FaceAPIClient.Call<CognitiveDetectResponse>(
+                var result = await FaceAPIClient.Call<CognitiveDetectResponse>(
                     $"/detect",
                     new { url = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{atmosphereFaceId.ToString("D")}.jpg" },
                     log);
+                return result
+                    .FirstOrDefault()
+                    ?.FaceId;
             }
             catch (InvalidOperationException ex)
             {
@@ -81,7 +80,7 @@ namespace Recognition
             }
         }
 
-        private static async Task<string> identifyFace(string cognitiveFaceId, TraceWriter log)
+        private static async Task<CognitiveIdentifyResponse.Candidate> identifyFace(string cognitiveFaceId, TraceWriter log)
         {
             if (String.IsNullOrEmpty(cognitiveFaceId)) throw new ArgumentNullException(nameof(cognitiveFaceId));
 
@@ -94,15 +93,14 @@ namespace Recognition
                         personGroupId = Settings.FACE_API_GROUP_NANE,
                         faceIds = new string[] { cognitiveFaceId },
                         maxNumOfCandidatesReturned = 3,
-                        confidenceThreshold = 0.5
+                        confidenceThreshold = 0.7
                     },
                     log);
 
                 return result
                     .FirstOrDefault()
                     ?.Candidates
-                    .FirstOrDefault()
-                    ?.PersonId;
+                    .FirstOrDefault();
             }
             catch (InvalidOperationException ex)
             {
