@@ -33,6 +33,7 @@ namespace Upload
             {
                 Id = processedFace.FaceId,
                 Time = DateTime.UtcNow,
+                ClientId = processedFace.ClientId,
                 processedFace.ImageName,
                 processedFace.FaceRectangle,
                 processedFace.Scores.Anger,
@@ -50,9 +51,9 @@ namespace Upload
                 await connection.OpenAsync();
                 await connection.ExecuteAsync(
                     @"INSERT INTO [dbo].[Faces] (
-                        [Id], [Time], [Image], [Rectangle], [CognitiveAnger], [CognitiveContempt], [CognitiveDisgust], [CognitiveFear], [CognitiveHappiness], [CognitiveNeutral], [CognitiveSadness], [CognitiveSurprise]) 
+                        [Id], [Time], [Image], [Rectangle], [ClientId], [CognitiveAnger], [CognitiveContempt], [CognitiveDisgust], [CognitiveFear], [CognitiveHappiness], [CognitiveNeutral], [CognitiveSadness], [CognitiveSurprise]) 
                       VALUES (
-                        @Id, @Time, @ImageName, @FaceRectangle, @Anger, @Contempt, @Disgust, @Fear, @Happiness, @Neutral, @Sadness, @Surprise)",
+                        @Id, @Time, @ImageName, @FaceRectangle, @ClientId, @Anger, @Contempt, @Disgust, @Fear, @Happiness, @Neutral, @Sadness, @Surprise)",
                     dataModel);
             }
 

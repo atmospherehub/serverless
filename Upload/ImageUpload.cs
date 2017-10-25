@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System;
 using System.Data.SqlClient;
 using Dapper;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Upload
 {
@@ -17,7 +18,7 @@ namespace Upload
         [FunctionName(nameof(ImageUpload))]
         public static async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post")]HttpRequestMessage request,
-            [Blob(blobPath: "faces/{rand-guid}.jpg", Connection = Settings.STORAGE_CONN_NAME)] Stream outputBlob,
+            [Blob(blobPath: "faces/{rand-guid}.jpg", access: FileAccess.ReadWrite, Connection = Settings.STORAGE_CONN_NAME)] CloudBlockBlob outputBlob,
             TraceWriter log)
         {
             log.Info($"Triggered '{nameof(ImageUpload)}'");
@@ -41,7 +42,10 @@ namespace Upload
             if (multipartData.Contents.Count != 1)
                 return request.CreateResponse(HttpStatusCode.BadRequest);
 
-            await multipartData.Contents[0].CopyToAsync(outputBlob);
+            await outputBlob.UploadFromStreamAsync(await multipartData.Contents[0].ReadAsStreamAsync());
+            outputBlob.Metadata.Add("clientId", clientId.ToString());
+            await outputBlob.SetMetadataAsync();
+
             return request.CreateResponse(HttpStatusCode.OK);
         }
 

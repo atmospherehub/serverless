@@ -13,5 +13,7 @@ namespace Upload.Models
         public Face.Rectangle FaceRectangle { get; set; }
 
         public EmotionScores Scores { get; set; }
+
+        public int ClientId { get; internal set; }
     }
 }
