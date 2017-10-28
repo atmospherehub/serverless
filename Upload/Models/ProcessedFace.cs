@@ -14,6 +14,6 @@ namespace Upload.Models
 
         public EmotionScores Scores { get; set; }
 
-        public int ClientId { get; internal set; }
+        public int ClientId { get; set; }
     }
 }
