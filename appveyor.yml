@@ -6,3 +6,7 @@ build:
 test: off
 install:
 - nuget restore
+branches:
+  only:
+    - master
+    - dev

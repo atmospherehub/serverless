@@ -6,6 +6,10 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System;
+using System.Data.SqlClient;
+using Dapper;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Upload
 {
@@ -13,21 +17,47 @@ namespace Upload
     {
         [FunctionName(nameof(ImageUpload))]
         public static async Task<HttpResponseMessage> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post")]HttpRequestMessage request,
-            [Blob(blobPath: "faces/{rand-guid}.jpg", Connection = Settings.STORAGE_CONN_NAME)] Stream outputBlob,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")]HttpRequestMessage request,
+            [Blob(blobPath: "faces/{rand-guid}.jpg", access: FileAccess.ReadWrite, Connection = Settings.STORAGE_CONN_NAME)] CloudBlockBlob outputBlob,
             TraceWriter log)
         {
-            log.Info($"Triggered '{nameof(ImageUpload)}' {Settings.IMAGES_ENDPOINT}");
+            log.Info($"Triggered '{nameof(ImageUpload)}'");
 
             if (!request.Content.IsMimeMultipartContent())
                 return request.CreateResponse(HttpStatusCode.UnsupportedMediaType);
 
+            if (String.IsNullOrEmpty(request.Headers.Authorization?.Parameter))
+                return request.CreateResponse(HttpStatusCode.Unauthorized);
+            
+            if (!Guid.TryParse(request.Headers.Authorization?.Parameter, out var token))
+                return request.CreateResponse(HttpStatusCode.Forbidden);
+            
+            var clientId = await validateToken(token);
+            if (!clientId.HasValue)
+                return request.CreateResponse(HttpStatusCode.Forbidden);
+
+            log.Info($"Detected client {clientId}");
+
             var multipartData = await request.Content.ReadAsMultipartAsync();
-            if(multipartData.Contents.Count != 1)
+            if (multipartData.Contents.Count != 1)
                 return request.CreateResponse(HttpStatusCode.BadRequest);
 
-            await multipartData.Contents[0].CopyToAsync(outputBlob);
+            await outputBlob.UploadFromStreamAsync(await multipartData.Contents[0].ReadAsStreamAsync());
+            outputBlob.Metadata.Add("clientId", clientId.ToString());
+            await outputBlob.SetMetadataAsync();
+
             return request.CreateResponse(HttpStatusCode.OK);
+        }
+
+        private static async Task<int?> validateToken(Guid token)
+        {
+            using (var connection = new SqlConnection(Settings.SQL_CONN_STRING))
+            {
+                await connection.OpenAsync();
+                return await connection.ExecuteScalarAsync<int?>(
+                    @"SELECT Id FROM [dbo].[Clients] WHERE Token = @token AND IsDisabled = 0",
+                    new { token });
+            }
         }
     }
 }

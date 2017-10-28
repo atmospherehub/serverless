@@ -6,6 +6,8 @@ CREATE TABLE [dbo].[Faces](
 	[Time] [datetimeoffset](7) NOT NULL,
 	[Image] [varchar](40) NOT NULL,
 	[Rectangle] [varchar](max) NOT NULL,
+	[UserId] [varchar](10) NULL,
+	[ClientId] [int] NOT NULL,
 	[CognitiveAnger] [real] NOT NULL,
 	[CognitiveContempt] [real] NOT NULL,
 	[CognitiveDisgust] [real] NOT NULL,
@@ -13,8 +15,7 @@ CREATE TABLE [dbo].[Faces](
 	[CognitiveHappiness] [real] NOT NULL,
 	[CognitiveNeutral] [real] NOT NULL,
 	[CognitiveSadness] [real] NOT NULL,
-	[CognitiveSurprise] [real] NOT NULL,
-	[UserId] [varchar](10) NULL,
+	[CognitiveSurprise] [real] NOT NULL
  CONSTRAINT [PK_Faces] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
@@ -132,4 +133,39 @@ CREATE NONCLUSTERED INDEX [IX_Email] ON [dbo].[UsersMap]
 (
 	[Email] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+GO
+
+/***************************************************************
+[Clients]
+***************************************************************/
+CREATE TABLE [dbo].[Clients](
+	[Id] [int] NOT NULL,
+	[Name] [nvarchar](256) NOT NULL,
+	[Token] [uniqueidentifier] NOT NULL,
+	[IsDisabled] [bit] NOT NULL,
+ CONSTRAINT [PK_Clients] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+)
+GO
+
+
+
+/***************************************************************
+Constraints
+***************************************************************/
+ALTER TABLE [dbo].[Faces]  WITH CHECK ADD  CONSTRAINT [FK_Faces_ClientId] FOREIGN KEY([ClientId])
+REFERENCES [dbo].[Clients] ([Id])
+ALTER TABLE [dbo].[Faces] CHECK CONSTRAINT [FK_Faces_ClientId]
+GO
+
+ALTER TABLE [dbo].[Faces]  WITH CHECK ADD  CONSTRAINT [FK_Faces_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[UsersMap] ([UserId])
+ALTER TABLE [dbo].[Faces] CHECK CONSTRAINT [FK_Faces_UserId]
+GO
+
+ALTER TABLE [dbo].[FaceTags]  WITH CHECK ADD  CONSTRAINT [FK_FaceTags_FaceId] FOREIGN KEY([FaceId])
+REFERENCES [dbo].[Faces] ([Id])
+ALTER TABLE [dbo].[FaceTags] CHECK CONSTRAINT [FK_FaceTags_FaceId]
 GO

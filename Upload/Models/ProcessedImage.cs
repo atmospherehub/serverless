@@ -7,5 +7,7 @@ namespace Upload.Models
         public string ImageName { get; set; }
 
         public Emotion[] Rectangles { get; set; }
+
+        public int ClientId { get; set; }
     }
 }

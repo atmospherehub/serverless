@@ -44,7 +44,8 @@ namespace Upload
                             Left = r.FaceRectangle.Left,
                             Top = r.FaceRectangle.Top,
                             Width = r.FaceRectangle.Width
-                        }
+                        },
+                        ClientId = processedImage.ClientId
                     })
                     .ToList()
                     .ForEach(f => outputTopic.Add(f.ToJson()));
