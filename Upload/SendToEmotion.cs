@@ -29,6 +29,7 @@ namespace Upload
             using (var inputStream = new MemoryStream())
             {
                 await inputImage.DownloadToStreamAsync(inputStream);
+                inputStream.Position = 0;
                 await inputImage.FetchAttributesAsync();
                 using (var request = new HttpRequestMessage(HttpMethod.Post, Settings.EMOTION_API_URL))
                 {
