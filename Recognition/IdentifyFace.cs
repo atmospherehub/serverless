@@ -93,7 +93,7 @@ namespace Recognition
                         personGroupId = Settings.FACE_API_GROUP_NANE,
                         faceIds = new string[] { cognitiveFaceId },
                         maxNumOfCandidatesReturned = 1,
-                        confidenceThreshold = 0.8
+                        confidenceThreshold = 0.89
                     },
                     log);
 
