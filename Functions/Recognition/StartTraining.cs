@@ -25,7 +25,7 @@ namespace Functions.Recognition
                 return;
             }
             var result = await FaceAPIClient.Call<dynamic>(
-                $"{Settings.FACE_API_URL}/{Settings.FACE_API_GROUP_NAME}/common/train",
+                $"{Settings.FACE_API_URL}/{Settings.FACE_API_GROUP_NAME}/train",
                 null,
                 log);
 
