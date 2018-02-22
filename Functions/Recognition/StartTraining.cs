@@ -24,14 +24,12 @@ namespace Functions.Recognition
                 log.Info($"No new faces were tagged => exiting");
                 return;
             }
+            var result = await FaceAPIClient.Call<dynamic>(
+                $"{Settings.FACE_API_URL}/{Settings.FACE_API_GROUP_NAME}/common/train",
+                null,
+                log);
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, $"{Settings.FACE_API_URL}/train"))
-            {
-                request.Headers.Add("Ocp-Apim-Subscription-Key", Settings.FACE_API_TOKEN);
-                var response = await _client.SendAsync(request);
-                var contents = await response.Content.ReadAsStringAsync();
-                log.Info($"Received result from faces API {response.StatusCode}: {contents}");
-            }
+            log.Info($"Received result from faces API {result.ToJson()}");
         }
 
         private static async Task<int> getNewTagsCount(DateTimeOffset startFrom)
