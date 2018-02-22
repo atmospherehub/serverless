@@ -24,9 +24,6 @@ namespace Common
         public static readonly string FACE_API_TOKEN = Settings.Get("FaceServiceAPIKey");
         public const string FACE_API_GROUP_NAME = "common";
 
-        public static readonly string EMOTION_API_URL = Settings.Get("EmotionAPIService");
-        public static readonly string EMOTION_API_TOKEN = Settings.Get("EmotionServiceAPIKey");
-
         public static readonly string SENDGRID_API_TOKEN = Settings.Get("SendgreedApiKey");
         public static readonly string SENDER_EMAIL_ADDRESS = Settings.Get("ReportsSenderAddress");
 

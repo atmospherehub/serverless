@@ -26,14 +26,7 @@ namespace Functions.Recognition
 
             var face = message.FromJson<Face>();
 
-            var cognitiveFaceId = await detectFace(face.Id, log); 
-            if(cognitiveFaceId == null)
-            {
-                log.Info($"No face was detected in {face}");
-                return;
-            }
-
-            var candidate = await identifyFace(cognitiveFaceId, log);
+            var candidate = await identifyFace(face.Id, log);
             if(candidate == null)
             {
                 log.Info($"Didn't indetify person in {face}");
@@ -59,30 +52,9 @@ namespace Functions.Recognition
             }
         }
 
-        private static async Task<string> detectFace(Guid atmosphereFaceId, TraceWriter log)
+        private static async Task<CognitiveIdentifyResponse.Candidate> identifyFace(Guid cognitiveFaceId, TraceWriter log)
         {
-            if (atmosphereFaceId == Guid.Empty) throw new ArgumentNullException(nameof(atmosphereFaceId));
-
-            try
-            {
-                var result = await FaceAPIClient.Call<CognitiveDetectResponse>(
-                    $"/detect",
-                    new { url = $"{Settings.IMAGES_ENDPOINT}/{Settings.CONTAINER_RECTANGLES}/{atmosphereFaceId.ToString("D")}.jpg" },
-                    log);
-                return result
-                    .FirstOrDefault()
-                    ?.FaceId;
-            }
-            catch (InvalidOperationException ex)
-            {
-                log.Error("Failed while trying to detect (first phase) face", ex);
-                return null;
-            }
-        }
-
-        private static async Task<CognitiveIdentifyResponse.Candidate> identifyFace(string cognitiveFaceId, TraceWriter log)
-        {
-            if (String.IsNullOrEmpty(cognitiveFaceId)) throw new ArgumentNullException(nameof(cognitiveFaceId));
+            if (cognitiveFaceId == Guid.Empty) throw new ArgumentNullException(nameof(cognitiveFaceId));
 
             try
             {
@@ -91,7 +63,7 @@ namespace Functions.Recognition
                     new
                     {
                         personGroupId = Settings.FACE_API_GROUP_NAME,
-                        faceIds = new string[] { cognitiveFaceId },
+                        faceIds = new Guid[] { cognitiveFaceId },
                         maxNumOfCandidatesReturned = 1,
                         confidenceThreshold = 0.80
                     },

@@ -8,7 +8,7 @@ This flows triggered by image that uploaded from atmosphere client device and ta
 |                                                           |
 |                                                           |
 |    +--------------------+        +--------------------+   +    +--------------------+
-+?+-->    ImageUpload     +-------->    SendToEmotion   +--+?+--->    FacesSplitter   |
++?+-->    ImageUpload     +-------->     DetectFaces    +--+?+--->    FacesSplitter   |
      +--------------------+        +--------------------+        +---------+----------+
                                                                            +
                                    atmosphere+images+with+faces [topic]+--+?

@@ -22,29 +22,23 @@ namespace Functions.Upload
 
             var processedImage = message.FromJson<ProcessedImage>();
 
-            if (processedImage.Rectangles == null || processedImage.Rectangles.Length == 0)
+            if (processedImage.Faces.Length == 0)
             {
                 log.Info($"No faces were detected => deleting blob");
                 BlobStorageClient.DeleteBlob(Settings.CONTAINER_FACES, processedImage.ImageName);
             }
             else
             {
-                log.Info($"{processedImage.Rectangles.Length} faces detected => rasing notifications");
+                log.Info($"{processedImage.Faces.Length} faces detected => rasing notifications");
 
                 processedImage
-                    .Rectangles
+                    .Faces
                     .Select(r => new ProcessedFace()
                     {
-                        FaceId = Guid.NewGuid(),
+                        FaceId = r.FaceId,
                         ImageName = processedImage.ImageName,
                         Scores = r.Scores,
-                        FaceRectangle = new FaceRectangle
-                        {
-                            Height = r.FaceRectangle.Height,
-                            Left = r.FaceRectangle.Left,
-                            Top = r.FaceRectangle.Top,
-                            Width = r.FaceRectangle.Width
-                        },
+                        FaceRectangle = r.FaceRectangle,
                         ClientId = processedImage.ClientId
                     })
                     .ToList()
