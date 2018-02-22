@@ -22,7 +22,7 @@ namespace Common
 
         public static readonly string FACE_API_URL = Settings.Get("FaceAPIService");
         public static readonly string FACE_API_TOKEN = Settings.Get("FaceServiceAPIKey");
-        public const string FACE_API_GROUP_NANE = "dm-atmosphere";
+        public const string FACE_API_GROUP_NAME = "common";
 
         public static readonly string EMOTION_API_URL = Settings.Get("EmotionAPIService");
         public static readonly string EMOTION_API_TOKEN = Settings.Get("EmotionServiceAPIKey");
