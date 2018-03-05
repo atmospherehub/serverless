@@ -65,7 +65,7 @@ namespace Functions.Recognition
                         personGroupId = Settings.FACE_API_GROUP_NAME,
                         faceIds = new Guid[] { cognitiveFaceId },
                         maxNumOfCandidatesReturned = 1,
-                        confidenceThreshold = 0.80
+                        confidenceThreshold = 0.7
                     },
                     log);
 
